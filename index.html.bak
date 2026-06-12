@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nyambi - Solusi Pekerja Terampil &amp; Terpercaya</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&amp;family=Nunito+Sans:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@100..900&amp;family=Nunito+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#1d4f3e",
+                        "on-tertiary-container": "#4f3d00",
+                        "primary-fixed-dim": "#9ed2bb",
+                        "primary-fixed": "#b9eed6",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1c1c18",
+                        "primary": "#003627",
+                        "inverse-on-surface": "#f4f0ea",
+                        "surface-variant": "#e6e2dc",
+                        "secondary-container": "#a3efcd",
+                        "surface-tint": "#366855",
+                        "tertiary-fixed": "#ffe08f",
+                        "pale-mint": "#9FCFB8",
+                        "on-background": "#1c1c18",
+                        "primary-container": "#1a4d3c",
+                        "surface-dim": "#ddd9d4",
+                        "inverse-primary": "#9ed2bb",
+                        "surface-container-highest": "#e6e2dc",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#1a6b50",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "forest-deep": "#0D2B20",
+                        "tertiary-container": "#cfa61e",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#eec13c",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513a",
+                        "mint-accent": "#5AAE8A",
+                        "on-tertiary-fixed": "#241a00",
+                        "inverse-surface": "#31302d",
+                        "secondary-fixed-dim": "#8ad6b5",
+                        "cream-dark": "#E8E2D8",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002116",
+                        "outline-variant": "#c0c9c3",
+                        "tertiary": "#755b00",
+                        "background": "#fdf9f3",
+                        "surface-container-high": "#ebe8e2",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#a5f2d0",
+                        "surface": "#fdf9f3",
+                        "outline": "#707974",
+                        "surface-container": "#f1ede7",
+                        "surface-container-low": "#f7f3ed",
+                        "on-secondary-container": "#206f54",
+                        "text-mid": "#3B5C4E",
+                        "on-error-container": "#93000a",
+                        "cta-amber": "#F5A623",
+                        "on-secondary-fixed": "#002115",
+                        "on-primary-container": "#8abda7",
+                        "surface-bright": "#fdf9f3",
+                        "on-surface-variant": "#404944"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "2xl": "32px",
+                        "5xl": "80px",
+                        "xl": "24px",
+                        "md": "12px",
+                        "xs": "4px",
+                        "lg": "16px",
+                        "3xl": "48px",
+                        "4xl": "64px",
+                        "sm": "8px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Nunito Sans"],
+                        "headline-lg": ["Nunito"],
+                        "body-md": ["Nunito Sans"],
+                        "headline-md": ["Nunito"],
+                        "headline-lg-mobile": ["Nunito"],
+                        "display": ["Nunito"],
+                        "label-sm": ["Nunito Sans"],
+                        "code": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-1px", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "38px", "letterSpacing": "-1px", "fontWeight": "800"}],
+                        "display": ["72px", {"lineHeight": "80px", "letterSpacing": "-2px", "fontWeight": "900"}],
+                        "label-sm": ["11px", {"lineHeight": "16px", "letterSpacing": "2px", "fontWeight": "700"}],
+                        "code": ["12px", {"lineHeight": "16px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-gradient {
+            background: linear-gradient(rgba(253, 249, 243, 0.85), rgba(253, 249, 243, 0.85)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRQw4aPeYZ2txwDqyrxmuVYij472CH4MgKB_zDT1Q1AWrsJCrxW3LFaR-tlSBfw4Qt4qU4gj_nxaRujUs-84pHkT0l6pafB9puX9_kMQhL7fXgnQVbrzkGXMU_HO75xvU0G7swh8LJWEjwy8BBsuI-3igStipI9nc7IaNn8japRSu88ngds7yBbJasH57w5FH4J7E04NNuPmvbHd0v6tNcaMjjJAC8K8uUyixyXU6kYlSJXah9Z6_rvm1hGgexmOSPH47NZ_lxQJs');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-surface dark:bg-surface full-width top-0 sticky z-50 border-b border-cream-dark dark:border-outline-variant">
+<nav class="flex justify-between items-center h-20 px-xl md:px-5xl max-w-[1440px] mx-auto w-full">
+<div class="flex items-center gap-2">
+<span class="text-headline-md font-display font-black text-primary dark:text-primary-fixed-dim tracking-tight">Nyambi</span>
+</div>
+<div class="hidden md:flex gap-xl items-center">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim pb-1 font-body-md text-body-md" href="#">Cari Jasa</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-body-md text-body-md" href="#">Menjadi Pekerja</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-body-md text-body-md" href="#">Tentang Kami</a>
+</div>
+<div class="flex gap-md items-center">
+<button class="hidden md:block px-lg py-sm rounded-full text-primary font-bold hover:bg-surface-container-low transition-all">Masuk</button>
+<button class="px-lg py-sm rounded-full bg-primary text-on-primary font-bold hover:bg-primary-container transition-all active:scale-95">Daftar</button>
+<button class="md:hidden p-2 text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="hero-gradient min-h-[85vh] flex flex-col items-center justify-center text-center px-xl py-4xl relative overflow-hidden">
+<div class="max-w-4xl mx-auto space-y-xl z-10">
+<h1 class="font-headline-lg text-headline-lg md:text-display text-forest-deep leading-tight">
+                    Kerja Lebih Mudah,<br class="hidden md:block"/> Hidup Lebih Baik
+                </h1>
+<p class="font-body-lg text-body-lg text-text-mid max-w-2xl mx-auto">
+                    Hubungkan kebutuhan Anda dengan pekerja serabutan terpercaya di sekitar Anda. Solusi praktis untuk setiap sudut rumah dan bisnis Anda.
+                </p>
+<!-- Floating Search Bar -->
+<div class="mt-2xl max-w-3xl mx-auto">
+<div class="bg-surface-container-lowest p-md rounded-full border border-cream-dark shadow-sm flex items-center gap-md focus-within:border-primary-container transition-all">
+<div class="flex-1 flex items-center px-lg border-r border-cream-dark">
+<span class="material-symbols-outlined text-outline mr-sm">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md" placeholder="Cari jasa: Tukang Kebun, Listrik..." type="text"/>
+</div>
+<div class="hidden md:flex flex-1 items-center px-lg">
+<span class="material-symbols-outlined text-outline mr-sm">location_on</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md" placeholder="Lokasi Anda" type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-2xl py-md rounded-full font-bold flex items-center gap-sm hover:opacity-90 active:scale-95 transition-all">
+                            Cari
+                        </button>
+</div>
+</div>
+</div>
+<!-- Atmospheric Element -->
+<div class="absolute -bottom-1 w-full overflow-hidden pointer-events-none">
+<svg class="w-full h-auto" fill="none" viewbox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 70C840 80 960 100 1080 110C1200 120 1320 120 1380 120H1440V0H1380C1320 0 1200 0 1080 0C960 0 840 0 720 0C600 0 480 0 360 0C240 0 120 0 60 0H0V120Z" fill="#FDF9F3"></path>
+</svg>
+</div>
+</section>
+<!-- Kategori Section -->
+<section class="py-4xl px-xl md:px-5xl max-w-[1440px] mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-3xl gap-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-forest-deep">Kategori Populer</h2>
+<p class="text-text-mid font-body-md">Temukan ahli terbaik untuk berbagai kebutuhan harian Anda.</p>
+</div>
+<button class="text-primary font-bold flex items-center gap-xs hover:underline transition-all">
+                    Lihat Semua Kategori <span class="material-symbols-outlined">arrow_right_alt</span>
+</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-xl">
+<!-- Category Card -->
+<div class="group bg-surface-container-lowest p-xl rounded-xl border border-cream-dark hover:border-primary transition-all cursor-pointer text-center">
+<div class="w-16 h-16 bg-pale-mint/20 text-primary rounded-full flex items-center justify-center mx-auto mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">grass</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-forest-deep">Tukang Kebun</h3>
+<p class="text-on-surface-variant text-label-sm uppercase mt-xs">150+ Pekerja</p>
+</div>
+<div class="group bg-surface-container-lowest p-xl rounded-xl border border-cream-dark hover:border-primary transition-all cursor-pointer text-center">
+<div class="w-16 h-16 bg-pale-mint/20 text-primary rounded-full flex items-center justify-center mx-auto mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">construction</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-forest-deep">Tukang Bangunan</h3>
+<p class="text-on-surface-variant text-label-sm uppercase mt-xs">80+ Pekerja</p>
+</div>
+<div class="group bg-surface-container-lowest p-xl rounded-xl border border-cream-dark hover:border-primary transition-all cursor-pointer text-center">
+<div class="w-16 h-16 bg-pale-mint/20 text-primary rounded-full flex items-center justify-center mx-auto mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">cleaning_services</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-forest-deep">Cleaning Service</h3>
+<p class="text-on-surface-variant text-label-sm uppercase mt-xs">200+ Pekerja</p>
+</div>
+<div class="group bg-surface-container-lowest p-xl rounded-xl border border-cream-dark hover:border-primary transition-all cursor-pointer text-center">
+<div class="w-16 h-16 bg-pale-mint/20 text-primary rounded-full flex items-center justify-center mx-auto mb-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">electrical_services</span>
+</div>
+<h3 class="font-headline-md text-body-lg text-forest-deep">Teknisi Listrik</h3>
+<p class="text-on-surface-variant text-label-sm uppercase mt-xs">45+ Pekerja</p>
+</div>
+</div>
+</section>
+<!-- Unggulan (Featured Workers) Section -->
+<section class="bg-surface-container-low py-4xl">
+<div class="px-xl md:px-5xl max-w-[1440px] mx-auto">
+<div class="text-center mb-4xl">
+<h2 class="font-headline-lg text-headline-lg text-forest-deep">Pekerja Unggulan Pekan Ini</h2>
+<p class="text-text-mid font-body-md max-w-xl mx-auto">Kami menyeleksi pekerja dengan rating tertinggi dan rekam jejak terbaik untuk kepuasan Anda.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
+<!-- Worker Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-cream-dark overflow-hidden hover:border-primary transition-all group">
+<div class="relative h-48 w-full">
+<img class="w-full h-full object-cover" data-alt="A professional Indonesian handyman smiling while holding a tool belt. He is standing in a brightly lit modern workshop environment with wooden accents and organized tools in the background. The aesthetic is clean, professional, and reliable, utilizing soft natural lighting and a warm high-quality photographic style consistent with the Nyambi brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXSS1AJzjgjVy-ulICYmxtyj6BH9xWOngNjY0aGIFYJRbbcEbvzfoQKNiRnzkBzV9id5Tlz_fjokGG2y9emD2Jq8EshPKCA-5M2FKHCb41xwR4kBBgitYdMYmxAPADEu8zwV5E_eYz6Kl7Cf4oMF3uLRUmy5Z-D861H4uLBMqD_MCbfXdOz5a3Cpjr9l-r9gVRB1Zt3W_S8g1aaydazJIQIgkuBJx9gx1pcdv_fG11BOZlzm4HTJF3jroO1M23PL7EzgOHUWTOySU"/>
+<div class="absolute top-md right-md">
+<span class="bg-green-100 text-secondary px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> Tersedia
+                                </span>
+</div>
+</div>
+<div class="p-xl">
+<div class="flex justify-between items-start mb-md">
+<div>
+<h4 class="font-headline-md text-body-lg text-forest-deep">Budi Santoso</h4>
+<p class="text-on-surface-variant text-body-md">Teknisi Listrik &amp; AC</p>
+</div>
+<div class="flex items-center text-cta-amber">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold ml-xs text-on-surface">4.9</span>
+</div>
+</div>
+<div class="flex gap-sm mb-xl">
+<span class="px-md py-xs bg-cream-dark rounded-full text-label-sm font-body-md">Fast Response</span>
+<span class="px-md py-xs bg-cream-dark rounded-full text-label-sm font-body-md">Verified</span>
+</div>
+<button class="w-full py-md rounded-full border-1.5 border-primary text-primary font-bold hover:bg-primary hover:text-on-primary transition-all">
+                                Lihat Profil
+                            </button>
+</div>
+</div>
+<!-- Worker Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-cream-dark overflow-hidden hover:border-primary transition-all group">
+<div class="relative h-48 w-full">
+<img class="w-full h-full object-cover" data-alt="A friendly female cleaning professional in a neat uniform holding a microfiber cloth and eco-friendly spray. She is standing in a bright, airy living room with warm lighting and a soft focus background. The mood is trustworthy and helpful, reflecting a high-standard service atmosphere with the Nyambi color palette subtly integrated through decor and uniform accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoliqKI8ijRLQlVli1XQVzUyq2-K6TNzcltrAHQl8W1vDJns9Ige43XXxXwd0rMlDlKmuasN-i8Q6LZMyf42r18llvYM3DU394pC7AHJe1uB-Is5kg2FpJ9bly2g85FlBGKHmWr6K7Tb4D38hKHPvj-lMkiT7SAP82xE5cCRmlyP6mLnBCzzh0jPGQ7mizp_0u6ZxTx89tRZNjmNkMV5aaskm9AYUwBhNsqb2lRegWOK8y65jRZ9aZKn8Xkrh0TgBqb8lRzqKPyB0"/>
+<div class="absolute top-md right-md">
+<span class="bg-orange-100 text-orange-700 px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-orange-700"></span> Sibuk
+                                </span>
+</div>
+</div>
+<div class="p-xl">
+<div class="flex justify-between items-start mb-md">
+<div>
+<h4 class="font-headline-md text-body-lg text-forest-deep">Siti Aminah</h4>
+<p class="text-on-surface-variant text-body-md">Home Cleaning Service</p>
+</div>
+<div class="flex items-center text-cta-amber">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold ml-xs text-on-surface">5.0</span>
+</div>
+</div>
+<div class="flex gap-sm mb-xl">
+<span class="px-md py-xs bg-cream-dark rounded-full text-label-sm font-body-md">Rapi</span>
+<span class="px-md py-xs bg-cream-dark rounded-full text-label-sm font-body-md">Detailed</span>
+</div>
+<button class="w-full py-md rounded-full border-1.5 border-primary text-primary font-bold hover:bg-primary hover:text-on-primary transition-all">
+                                Lihat Profil
+                            </button>
+</div>
+</div>
+<!-- Worker Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl border border-cream-dark overflow-hidden hover:border-primary transition-all group">
+<div class="relative h-48 w-full">
+<img class="w-full h-full object-cover" data-alt="A skilled middle-aged carpenter smiling warmly at the camera in a sunny outdoor woodshop. He is wearing a professional apron and holding a wooden plank. The lighting is golden and natural, emphasizing a hardworking yet approachable personality. The background features lush greenery and stacks of quality wood, maintaining the organic Forest Green and Cream brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlikCI4497UnNbbIJkVlmInaIEJ0kRrOPLOtyJMsqDbpU3XwB43Ct9hULDkyRlrjos1JHLlJiWq6AucxjiT41LLGI60xIsGglrR3OKjWdqfdmInv9sxwX7mt_S-Zghy8wGo1YYCplp3rZh7TIc35DHTRb5HlubkNV74q7gNsG1aH4csES2kpWX2__3i0sZ5x7YSdAUZhLnItdpC3PZ0VMY8L7cNTaxU9iOjQpPjP1aVf-_Qji9xIukNkGJ7bWssQHv0IN-IXRlsas"/>
+<div class="absolute top-md right-md">
+<span class="bg-green-100 text-secondary px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> Tersedia
+                                </span>
+</div>
+</div>
+<div class="p-xl">
+<div class="flex justify-between items-start mb-md">
+<div>
+<h4 class="font-headline-md text-body-lg text-forest-deep">Agus Wijaya</h4>
+<p class="text-on-surface-variant text-body-md">Tukang Kayu &amp; Furniture</p>
+</div>
+<div class="flex items-center text-cta-amber">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold ml-xs text-on-surface">4.8</span>
+</div>
+</div>
+<div class="flex gap-sm mb-xl">
+<span class="px-md py-xs bg-cream-dark rounded-full text-label-sm font-body-md">Bergaransi</span>
+<span class="px-md py-xs bg-cream-dark rounded-full text-label-sm font-body-md">Sertifikat Ahli</span>
+</div>
+<button class="w-full py-md rounded-full border-1.5 border-primary text-primary font-bold hover:bg-primary hover:text-on-primary transition-all">
+                                Lihat Profil
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Banner -->
+<section class="py-5xl px-xl md:px-5xl">
+<div class="max-w-[1440px] mx-auto bg-forest-deep rounded-[32px] p-2xl md:p-4xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-3xl">
+<!-- Decorative Circle -->
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-cta-amber/10 rounded-full blur-3xl"></div>
+<div class="z-10 text-center md:text-left">
+<h2 class="font-headline-lg text-headline-lg text-surface-container-lowest mb-md">Punya keahlian dan ingin menambah penghasilan?</h2>
+<p class="text-pale-mint font-body-lg max-w-xl">Bergabunglah dengan ribuan pekerja terpercaya di Nyambi dan temukan peluang kerja setiap hari.</p>
+</div>
+<div class="z-10 flex flex-col sm:flex-row gap-lg">
+<button class="bg-cta-amber text-forest-deep px-4xl py-xl rounded-full font-bold text-body-lg hover:scale-105 transition-all shadow-lg active:scale-95">
+                        Mulai Cari Jasa Sekarang
+                    </button>
+<button class="border-2 border-pale-mint text-pale-mint px-4xl py-xl rounded-full font-bold text-body-lg hover:bg-pale-mint/10 transition-all">
+                        Daftar Jadi Pekerja
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Component -->
+<footer class="bg-forest-deep dark:bg-forest-deep border-t border-on-primary-fixed-variant">
+<div class="flex flex-col md:flex-row justify-between items-center py-3xl px-xl md:px-5xl max-w-[1440px] mx-auto w-full">
+<div class="mb-2xl md:mb-0 text-center md:text-left">
+<span class="font-headline-md text-headline-md text-surface dark:text-surface block mb-sm">Nyambi</span>
+<p class="text-pale-mint text-body-md font-body-md">© 2024 Nyambi. Solusi Pekerja Terampil &amp; Terpercaya.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-xl">
+<a class="text-surface-variant/80 hover:text-surface transition-colors font-body-md text-body-md hover:underline" href="#">Syarat &amp; Ketentuan</a>
+<a class="text-surface-variant/80 hover:text-surface transition-colors font-body-md text-body-md hover:underline" href="#">Kebijakan Privasi</a>
+<a class="text-surface-variant/80 hover:text-surface transition-colors font-body-md text-body-md hover:underline" href="#">Bantuan</a>
+<a class="text-surface-variant/80 hover:text-surface transition-colors font-body-md text-body-md hover:underline" href="#">Kontak Kami</a>
+</div>
+<div class="mt-2xl md:mt-0 flex gap-lg">
+<a class="w-10 h-10 rounded-full border border-on-primary-fixed-variant flex items-center justify-center text-pale-mint hover:bg-primary-container transition-all" href="#">
+<span class="material-symbols-outlined">face_nod</span>
+</a>
+<a class="w-10 h-10 rounded-full border border-on-primary-fixed-variant flex items-center justify-center text-pale-mint hover:bg-primary-container transition-all" href="#">
+<span class="material-symbols-outlined">share</span>
+</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for smooth scrolling or hover effects
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.95)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = 'scale(1)';
+            });
+        });
+
+        // Simple scroll reveal effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>

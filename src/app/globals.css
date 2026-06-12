@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark, .dark *));
+
+@theme {
+  /* ── Colors ── */
+  --color-on-primary-fixed-variant: #1d4f3e;
+  --color-on-tertiary-container: #4f3d00;
+  --color-primary-fixed-dim: #9ed2bb;
+  --color-primary-fixed: #b9eed6;
+  --color-on-error: #ffffff;
+  --color-on-surface: #1c1c18;
+  --color-primary: #003627;
+  --color-inverse-on-surface: #f4f0ea;
+  --color-surface-variant: #e6e2dc;
+  --color-secondary-container: #a3efcd;
+  --color-surface-tint: #366855;
+  --color-tertiary-fixed: #ffe08f;
+  --color-pale-mint: #9fcfb8;
+  --color-on-background: #1c1c18;
+  --color-primary-container: #1a4d3c;
+  --color-surface-dim: #ddd9d4;
+  --color-inverse-primary: #9ed2bb;
+  --color-surface-container-highest: #e6e2dc;
+  --color-on-tertiary: #ffffff;
+  --color-secondary: #1a6b50;
+  --color-on-tertiary-fixed-variant: #584400;
+  --color-forest-deep: #0d2b20;
+  --color-tertiary-container: #cfa61e;
+  --color-surface-container-lowest: #ffffff;
+  --color-tertiary-fixed-dim: #eec13c;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-fixed-variant: #00513a;
+  --color-mint-accent: #5aae8a;
+  --color-on-tertiary-fixed: #241a00;
+  --color-inverse-surface: #31302d;
+  --color-secondary-fixed-dim: #8ad6b5;
+  --color-cream-dark: #e8e2d8;
+  --color-error-container: #ffdad6;
+  --color-on-primary-fixed: #002116;
+  --color-outline-variant: #c0c9c3;
+  --color-tertiary: #755b00;
+  --color-background: #fdf9f3;
+  --color-surface-container-high: #ebe8e2;
+  --color-error: #ba1a1a;
+  --color-on-primary: #ffffff;
+  --color-secondary-fixed: #a5f2d0;
+  --color-surface: #fdf9f3;
+  --color-outline: #707974;
+  --color-surface-container: #f1ede7;
+  --color-surface-container-low: #f7f3ed;
+  --color-on-secondary-container: #206f54;
+  --color-text-mid: #3b5c4e;
+  --color-on-error-container: #93000a;
+  --color-cta-amber: #f5a623;
+  --color-on-secondary-fixed: #002115;
+  --color-on-primary-container: #8abda7;
+  --color-surface-bright: #fdf9f3;
+  --color-on-surface-variant: #404944;
+
+  /* ── Spacing ── */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-base: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+  --spacing-4xl: 64px;
+  --spacing-5xl: 80px;
+
+  /* ── Border Radius ── */
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+
+  /* ── Font Families ── */
+  --font-body-lg: "Nunito Sans", sans-serif;
+  --font-headline-lg: "Nunito", sans-serif;
+  --font-body-md: "Nunito Sans", sans-serif;
+  --font-headline-md: "Nunito", sans-serif;
+  --font-headline-lg-mobile: "Nunito", sans-serif;
+  --font-display: "Nunito", sans-serif;
+  --font-label-sm: "Nunito Sans", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
+
+  /* ── Font Sizes ── */
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+
+  --text-headline-lg: 36px;
+  --text-headline-lg--line-height: 44px;
+  --text-headline-lg--letter-spacing: -1px;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+
+  --text-headline-lg-mobile: 32px;
+  --text-headline-lg-mobile--line-height: 38px;
+  --text-headline-lg-mobile--letter-spacing: -1px;
+
+  --text-display: 72px;
+  --text-display--line-height: 80px;
+  --text-display--letter-spacing: -2px;
+
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--letter-spacing: 2px;
+
+  --text-code: 12px;
+  --text-code--line-height: 16px;
+}
+
+/* Font weights baked into semantic text sizes */
+@layer base {
+  .text-headline-lg { font-weight: 800; }
+  .text-headline-lg-mobile { font-weight: 800; }
+  .text-headline-md { font-weight: 700; }
+  .text-display { font-weight: 900; }
+  .text-label-sm { font-weight: 700; }
+}
+
+/* Custom border width not in Tailwind's default scale */
+@layer utilities {
+  .border-1\.5 {
+    border-width: 1.5px;
+  }
+}
+
+/* Material Symbols base variation settings */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Hero section background */
+.hero-gradient {
+  background: linear-gradient(rgba(253, 249, 243, 0.5), rgba(253, 249, 243, 0.5)),
+    url('/hero.png');
+  background-size: cover;
+  background-position: center;
+}
