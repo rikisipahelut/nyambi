@@ -42,26 +42,27 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
     e.preventDefault();
     setLoading(true);
 
-    const orderId = `NYM-${Date.now().toString(36).toUpperCase()}`;
+    try {
+      const order = await addOrder({
+        worker_id: workerId,
+        tanggal: form.tanggal,
+        waktu: form.waktu,
+        deskripsi: form.deskripsi,
+        alamat: form.alamat,
+        telepon: form.telepon,
+      });
 
-    addOrder({
-      orderId,
-      worker: workerName,
-      specialty,
-      workerId,
-      ...form,
-      status: "menunggu",
-      createdAt: new Date().toISOString(),
-    });
+      const params = new URLSearchParams({
+        worker: workerName,
+        specialty,
+        workerId,
+        ...form,
+      });
 
-    const params = new URLSearchParams({
-      worker: workerName,
-      specialty,
-      workerId,
-      ...form,
-    });
-
-    router.push(`/pesanan/${orderId}?${params.toString()}`);
+      router.push(`/pesanan/${order.orderId}?${params.toString()}`);
+    } catch {
+      setLoading(false);
+    }
   }
 
   return (

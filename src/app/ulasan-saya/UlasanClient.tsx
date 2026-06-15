@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrders, type Order } from "@/hooks/useOrders";
-import { useReviews, type Review } from "@/hooks/useReviews";
+import { useReviews } from "@/hooks/useReviews";
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hover, setHover] = useState(0);
@@ -33,25 +33,24 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-function ReviewForm({ order, onSubmit }: { order: Order; onSubmit: (r: Review) => void }) {
+function ReviewForm({ order, onSubmit }: { order: Order; onSubmit: (orderId: string, rating: number, comment: string) => Promise<void> }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (rating === 0) { setError("Pilih bintang terlebih dahulu."); return; }
     if (comment.trim().length < 10) { setError("Ulasan minimal 10 karakter."); return; }
-    onSubmit({
-      reviewId: `rev_${Date.now()}`,
-      orderId: order.orderId,
-      workerId: order.workerId,
-      workerName: order.worker,
-      specialty: order.specialty,
-      rating,
-      comment: comment.trim(),
-      createdAt: new Date().toISOString(),
-    });
+    setLoading(true);
+    try {
+      await onSubmit(order.orderId, rating, comment.trim());
+    } catch {
+      setError("Gagal mengirim ulasan. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -78,7 +77,8 @@ function ReviewForm({ order, onSubmit }: { order: Order; onSubmit: (r: Review) =
       )}
       <button
         type="submit"
-        className="px-3xl py-sm rounded-full bg-primary text-on-primary font-bold text-body-md hover:bg-primary-container transition-all active:scale-95"
+        disabled={loading}
+        className="px-3xl py-sm rounded-full bg-primary text-on-primary font-bold text-body-md hover:bg-primary-container transition-all active:scale-95 disabled:opacity-70"
       >
         Kirim Ulasan
       </button>
@@ -169,7 +169,7 @@ export default function UlasanClient() {
                     {openForm === order.orderId ? (
                       <ReviewForm
                         order={order}
-                        onSubmit={(r) => { addReview(r); setOpenForm(null); }}
+                        onSubmit={async (orderId, rating, comment) => { await addReview({ order_id: orderId, rating, comment }); setOpenForm(null); }}
                       />
                     ) : (
                       <button

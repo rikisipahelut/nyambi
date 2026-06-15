@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -13,9 +13,20 @@ export default function SearchBar({ initialQuery = "", initialLokasi = "" }: Pro
   const [query, setQuery] = useState(initialQuery);
   const [lokasi, setLokasi] = useState(initialLokasi);
 
+  useEffect(() => {
+    if (initialLokasi) return;
+    try {
+      const saved = localStorage.getItem("nyambi_lokasi");
+      if (saved) setLokasi(saved);
+    } catch {}
+  }, [initialLokasi]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      router.push("/cari");
+      return;
+    }
     const params = new URLSearchParams();
     params.set("q", query.trim());
     if (lokasi.trim()) params.set("lokasi", lokasi.trim());
@@ -49,7 +60,7 @@ export default function SearchBar({ initialQuery = "", initialLokasi = "" }: Pro
         {query && (
           <button
             type="button"
-            onClick={() => { setQuery(""); setLokasi(""); }}
+            onClick={() => { setQuery(""); setLokasi(""); router.push("/cari"); }}
             className="text-on-surface-variant hover:text-primary transition-colors shrink-0"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>

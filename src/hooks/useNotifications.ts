@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 export interface Notif {
   id: string;
@@ -12,63 +13,45 @@ export interface Notif {
   createdAt: string;
 }
 
-const KEY = "nyambi_notifs";
+interface ApiNotif {
+  id: string;
+  icon: string;
+  title: string;
+  body: string;
+  href: string;
+  is_read: boolean;
+  created_at: string;
+}
 
-const SEEDS: Notif[] = [
-  {
-    id: "n1",
-    icon: "celebration",
-    title: "Selamat datang di Nyambi!",
-    body: "Temukan ribuan pekerja terampil di sekitar Anda.",
-    href: "/",
-    read: false,
-    createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "n2",
-    icon: "tips_and_updates",
-    title: "Lengkapi profil Anda",
-    body: "Tambahkan nomor telepon agar pekerja lebih mudah menghubungi Anda.",
-    href: "/profil/edit",
-    read: false,
-    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-  },
-];
-
-function ensureSeeds() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) {
-      localStorage.setItem(KEY, JSON.stringify(SEEDS));
-      return SEEDS;
-    }
-    return JSON.parse(raw) as Notif[];
-  } catch {
-    return SEEDS;
-  }
+function mapNotif(n: ApiNotif): Notif {
+  return {
+    id:        n.id,
+    icon:      n.icon,
+    title:     n.title,
+    body:      n.body,
+    href:      n.href,
+    read:      n.is_read,
+    createdAt: n.created_at,
+  };
 }
 
 export function useNotifications() {
   const [notifs, setNotifs] = useState<Notif[]>([]);
 
   useEffect(() => {
-    setNotifs(ensureSeeds());
+    api.get<{ data: ApiNotif[] }>("/notifications")
+      .then((res) => setNotifs(res.data.map(mapNotif)))
+      .catch(() => {});
   }, []);
 
-  function markRead(id: string) {
-    setNotifs((prev) => {
-      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
-      localStorage.setItem(KEY, JSON.stringify(updated));
-      return updated;
-    });
+  async function markRead(id: string) {
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    await api.put(`/notifications/${id}/read`).catch(() => {});
   }
 
-  function markAllRead() {
-    setNotifs((prev) => {
-      const updated = prev.map((n) => ({ ...n, read: true }));
-      localStorage.setItem(KEY, JSON.stringify(updated));
-      return updated;
-    });
+  async function markAllRead() {
+    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+    await api.put("/notifications/read-all").catch(() => {});
   }
 
   const unreadCount = notifs.filter((n) => !n.read).length;

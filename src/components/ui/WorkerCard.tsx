@@ -5,7 +5,22 @@ import Image from "next/image";
 import type { Worker } from "@/types";
 import { useFavorites } from "@/hooks/useFavorites";
 
-export default function WorkerCard({ id, name, specialty, imageUrl, imageAlt, rating, tags, status }: Worker) {
+function WorkerAvatar({ name }: { name: string }) {
+  const initials = name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="w-full h-full bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+      <span className="text-4xl font-black text-primary">{initials}</span>
+    </div>
+  );
+}
+
+export default function WorkerCard({ id, name, specialty, imageUrl, imageAlt, rating, tags, status, location }: Worker) {
   const isAvailable = status === "available";
   const { isFavorite, toggle } = useFavorites();
   const favorited = isFavorite(id);
@@ -13,7 +28,11 @@ export default function WorkerCard({ id, name, specialty, imageUrl, imageAlt, ra
   return (
     <div className="bg-surface-container-lowest rounded-xl border border-cream-dark overflow-hidden hover:border-primary transition-all group">
       <div className="relative h-48 w-full">
-        <Image src={imageUrl} alt={imageAlt} fill className="object-cover" />
+        {imageUrl ? (
+          <Image src={imageUrl} alt={imageAlt} fill className="object-cover" />
+        ) : (
+          <WorkerAvatar name={name} />
+        )}
         <div className="absolute top-md right-md">
           {isAvailable ? (
             <span className="bg-green-100 text-secondary px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs">
@@ -43,6 +62,12 @@ export default function WorkerCard({ id, name, specialty, imageUrl, imageAlt, ra
           <div>
             <h4 className="font-headline-md text-body-lg text-forest-deep">{name}</h4>
             <p className="text-on-surface-variant text-body-md">{specialty}</p>
+            {location && (
+              <p className="flex items-center gap-xs text-on-surface-variant text-label-sm mt-xs">
+                <span className="material-symbols-outlined text-[14px]">location_on</span>
+                {location}
+              </p>
+            )}
           </div>
           <div className="flex items-center text-cta-amber">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>

@@ -4,29 +4,33 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { ApiError } from "@/lib/api";
 
 export default function MasukForm() {
   const { login } = useAuth();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ email: "", password: "" });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setError("");
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      login({
-        nama: form.email.split("@")[0],
-        email: form.email,
-        joinedAt: new Date().toISOString(),
-      });
+    setError("");
+    try {
+      await login(form.email, form.password);
       router.push("/profil");
-    }, 800);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -77,6 +81,13 @@ export default function MasukForm() {
         </div>
       </div>
 
+      {error && (
+        <div className="flex items-center gap-sm bg-error-container/20 border border-error text-error px-lg py-md rounded-xl text-body-md font-body-md">
+          <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+          {error}
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={loading}
@@ -87,9 +98,7 @@ export default function MasukForm() {
             <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
             Masuk...
           </>
-        ) : (
-          "Masuk"
-        )}
+        ) : "Masuk"}
       </button>
 
       <p className="text-center text-on-surface-variant font-body-md text-body-md">

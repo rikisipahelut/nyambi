@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 export type OrderStatus = "menunggu" | "dikonfirmasi" | "selesai" | "dibatalkan";
 
@@ -18,41 +19,64 @@ export interface Order {
   createdAt: string;
 }
 
-const KEY = "nyambi_orders";
+interface ApiOrder {
+  id: string;
+  worker: { id: string; nama: string; specialty?: string; image_url?: string };
+  tanggal: string;
+  waktu: string;
+  deskripsi: string;
+  alamat: string;
+  telepon: string;
+  status: OrderStatus;
+  created_at: string;
+}
+
+function mapOrder(o: ApiOrder): Order {
+  return {
+    orderId:   o.id,
+    worker:    o.worker?.nama ?? "",
+    specialty: o.worker?.specialty ?? "",
+    workerId:  o.worker?.id ?? "",
+    tanggal:   o.tanggal,
+    waktu:     o.waktu,
+    deskripsi: o.deskripsi,
+    alamat:    o.alamat,
+    telepon:   o.telepon,
+    status:    o.status,
+    createdAt: o.created_at,
+  };
+}
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setOrders(JSON.parse(raw));
-    } catch {}
+    api.get<{ data: ApiOrder[] }>("/orders")
+      .then((res) => setOrders(res.data.map(mapOrder)))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  function saveOrder(order: Order) {
-    setOrders((prev) => {
-      const updated = [order, ...prev];
-      localStorage.setItem(KEY, JSON.stringify(updated));
-      return updated;
-    });
+  async function cancelOrder(orderId: string) {
+    await api.put(`/orders/${orderId}/cancel`);
+    setOrders((prev) =>
+      prev.map((o) => (o.orderId === orderId ? { ...o, status: "dibatalkan" } : o))
+    );
   }
 
-  function updateStatus(orderId: string, status: OrderStatus) {
-    setOrders((prev) => {
-      const updated = prev.map((o) => (o.orderId === orderId ? { ...o, status } : o));
-      localStorage.setItem(KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }
-
-  return { orders, saveOrder, updateStatus };
+  return { orders, loading, cancelOrder };
 }
 
-export function addOrder(order: Order) {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const existing: Order[] = raw ? JSON.parse(raw) : [];
-    localStorage.setItem(KEY, JSON.stringify([order, ...existing]));
-  } catch {}
+// Standalone — dipanggil dari BookingModal
+export async function addOrder(payload: {
+  worker_id: string;
+  tanggal: string;
+  waktu: string;
+  deskripsi: string;
+  alamat: string;
+  telepon: string;
+}): Promise<Order> {
+  const res = await api.post<{ data: ApiOrder }>("/orders", payload);
+  return mapOrder(res.data);
 }
