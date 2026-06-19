@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import type { Worker } from "@/types";
 import { useFavorites } from "@/hooks/useFavorites";
 
@@ -29,10 +28,12 @@ export default function WorkerCard({ id, name, specialty, imageUrl, imageAlt, ra
     <div className="bg-surface-container-lowest rounded-xl border border-cream-dark overflow-hidden hover:border-primary transition-all group">
       <div className="relative h-48 w-full">
         {imageUrl ? (
-          <Image src={imageUrl} alt={imageAlt} fill className="object-cover" />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={imageAlt} className="w-full h-full object-cover object-top" />
         ) : (
           <WorkerAvatar name={name} />
         )}
+        {imageUrl && <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent" />}
         <div className="absolute top-md right-md">
           {isAvailable ? (
             <span className="bg-green-100 text-secondary px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs">

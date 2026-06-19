@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, setAccessToken, loadStoredToken, ApiError } from "@/lib/api";
+import { resolveStorageUrl } from "@/lib/storage";
 
 export interface AuthUser {
   id: string;
@@ -10,6 +11,7 @@ export interface AuthUser {
   telepon?: string;
   is_worker: boolean;
   joinedAt: string;
+  avatar?: string;
 }
 
 const USER_KEY = "nyambi_user";
@@ -40,6 +42,7 @@ function mapMe(raw: Record<string, unknown>): AuthUser {
     telepon:   raw.telepon as string | undefined,
     is_worker: Boolean(raw.is_worker),
     joinedAt:  (raw.created_at ?? new Date().toISOString()) as string,
+    avatar:    resolveStorageUrl(raw.avatar_url as string | null) || undefined,
   };
 }
 
@@ -138,5 +141,16 @@ export function useAuth() {
     await api.put("/users/me/password", data);
   }
 
-  return { user, ready, login, register, logout, updateProfile, updatePassword };
+  async function updateAvatar(file: File): Promise<void> {
+    const form = new FormData();
+    form.append("avatar", file);
+    const res = await api.post<{ data: { avatar_url: string } }>("/users/me/avatar", form);
+    if (user) {
+      const updated = { ...user, avatar: resolveStorageUrl(res.data.avatar_url) || undefined };
+      saveUser(updated);
+      setUser(updated);
+    }
+  }
+
+  return { user, ready, login, register, logout, updateProfile, updatePassword, updateAvatar };
 }

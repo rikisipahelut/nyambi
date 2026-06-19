@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import BookingModal from "@/components/ui/BookingModal";
+import { resolveStorageUrl } from "@/lib/storage";
 
 // ── Types ─────────────────────────────────────────────────
 interface ApiWorkerFull {
@@ -100,13 +100,14 @@ export default async function PekerjaProfilPage({
       <main className="max-w-360 mx-auto px-xl md:px-5xl py-4xl">
         {/* Profile card */}
         <div className="bg-surface-container-lowest rounded-xl border border-cream-dark overflow-hidden mb-2xl">
-          <div className="relative h-56 w-full">
-            {worker.image_url ? (
-              <Image src={worker.image_url} alt={worker.nama} fill className="object-cover" />
+          <div className="relative h-72 w-full">
+            {resolveStorageUrl(worker.image_url) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={resolveStorageUrl(worker.image_url)} alt={worker.nama} className="w-full h-full object-cover object-top" />
             ) : (
               <WorkerAvatar name={worker.nama} />
             )}
-            <div className="absolute inset-0 bg-linear-to-t from-forest-deep/60 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
             <div className="absolute bottom-xl left-xl right-xl flex items-end justify-between">
               <div>
                 <h1 className="font-headline-lg text-headline-md text-surface-container-lowest">

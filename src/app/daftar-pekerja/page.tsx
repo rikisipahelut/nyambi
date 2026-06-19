@@ -1,13 +1,33 @@
 import Link from "next/link";
-import { categories } from "@/data/categories";
 import DaftarForm from "./DaftarForm";
+import type { Category } from "@/types";
 
 export const metadata = {
   title: "Daftar Jadi Pekerja - Nyambi",
   description: "Bergabunglah dengan ribuan pekerja terpercaya di Nyambi.",
 };
 
-export default function DaftarPekerjaPage() {
+async function fetchCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data.map((c: { id: string; icon: string; title: string; worker_count: number }) => ({
+      id: c.id,
+      icon: c.icon,
+      title: c.title,
+      workerCount: `${c.worker_count}+`,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function DaftarPekerjaPage() {
+  const categories = await fetchCategories();
+
   return (
     <>
       <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">

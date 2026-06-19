@@ -3,6 +3,7 @@ import Link from "next/link";
 import WorkerCard from "@/components/ui/WorkerCard";
 import SearchBar from "@/app/cari/SearchBar";
 import { CategoryScrollFilter } from "@/components/ui/CategoryScrollFilter";
+import { resolveStorageUrl } from "@/lib/storage";
 import type { Worker } from "@/types";
 
 export const metadata = {
@@ -38,7 +39,7 @@ function mapWorker(w: ApiWorker): Worker {
     categoryId: "",
     name: w.nama,
     specialty: w.specialty,
-    imageUrl: w.image_url ?? "",
+    imageUrl: resolveStorageUrl(w.image_url),
     imageAlt: w.nama,
     rating: w.rating,
     tags: [],
@@ -161,33 +162,33 @@ async function WorkersList({
           {prevHref ? (
             <Link
               href={prevHref}
-              className="flex items-center gap-xs px-xl py-md rounded-full border border-cream-dark text-on-surface-variant hover:border-primary hover:text-primary transition-all font-bold"
+              className="flex items-center gap-xs px-md sm:px-xl py-sm sm:py-md rounded-full border border-cream-dark text-on-surface-variant hover:border-primary hover:text-primary transition-all font-bold"
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              Sebelumnya
+              <span className="hidden sm:inline">Sebelumnya</span>
             </Link>
           ) : (
-            <span className="flex items-center gap-xs px-xl py-md rounded-full border border-cream-dark text-on-surface-variant/40 font-bold cursor-not-allowed">
+            <span className="flex items-center gap-xs px-md sm:px-xl py-sm sm:py-md rounded-full border border-cream-dark text-on-surface-variant/40 font-bold cursor-not-allowed">
               <span className="material-symbols-outlined">arrow_back</span>
-              Sebelumnya
+              <span className="hidden sm:inline">Sebelumnya</span>
             </span>
           )}
 
-          <span className="text-on-surface-variant font-body-md">
-            Halaman {meta.page} / {meta.total_pages}
+          <span className="text-on-surface-variant font-body-md text-sm sm:text-base">
+            {meta.page} / {meta.total_pages}
           </span>
 
           {nextHref ? (
             <Link
               href={nextHref}
-              className="flex items-center gap-xs px-xl py-md rounded-full border border-cream-dark text-on-surface-variant hover:border-primary hover:text-primary transition-all font-bold"
+              className="flex items-center gap-xs px-md sm:px-xl py-sm sm:py-md rounded-full border border-cream-dark text-on-surface-variant hover:border-primary hover:text-primary transition-all font-bold"
             >
-              Selanjutnya
+              <span className="hidden sm:inline">Selanjutnya</span>
               <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           ) : (
-            <span className="flex items-center gap-xs px-xl py-md rounded-full border border-cream-dark text-on-surface-variant/40 font-bold cursor-not-allowed">
-              Selanjutnya
+            <span className="flex items-center gap-xs px-md sm:px-xl py-sm sm:py-md rounded-full border border-cream-dark text-on-surface-variant/40 font-bold cursor-not-allowed">
+              <span className="hidden sm:inline">Selanjutnya</span>
               <span className="material-symbols-outlined">arrow_forward</span>
             </span>
           )}

@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { api, ApiError } from "@/lib/api";
+import { LocationCombobox } from "@/components/ui/LocationCombobox";
 import type { Category } from "@/types";
 
 const STEPS = ["Identitas", "Keahlian", "Konfirmasi"] as const;
+
+const EXP_MAP: Record<string, number> = {
+  "Kurang dari 1 tahun": 0,
+  "1–3 tahun": 1,
+  "3–5 tahun": 3,
+  "5–10 tahun": 5,
+  "Lebih dari 10 tahun": 10,
+};
 
 interface Props {
   categories: Category[];
@@ -12,18 +23,33 @@ interface Props {
 
 export default function DaftarForm({ categories }: Props) {
   const router = useRouter();
+  const { user, ready } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [form, setForm] = useState({
     nama: "",
     telepon: "",
     lokasi: "",
+    specialty: "",
     categoryIds: [] as string[],
     pengalaman: "",
     bio: "",
     layanan: "",
   });
   const [categoryError, setCategoryError] = useState(false);
+  const [lokasiError, setLokasiError] = useState(false);
+
+  useEffect(() => {
+    if (ready && !user) router.replace("/masuk");
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        nama: user.nama,
+        telepon: user.telepon ?? "",
+      }));
+    }
+  }, [ready, user, router]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -43,6 +69,10 @@ export default function DaftarForm({ categories }: Props) {
 
   function nextStep(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.lokasi) {
+      setLokasiError(true);
+      return;
+    }
     setStep((s) => s + 1);
   }
 
@@ -58,18 +88,43 @@ export default function DaftarForm({ categories }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const selectedTitles = categories
-      .filter((c) => form.categoryIds.includes(c.id))
-      .map((c) => c.title)
-      .join(", ");
-    const params = new URLSearchParams({ nama: form.nama, kategori: selectedTitles });
-    router.push(`/daftar-pekerja/sukses?${params.toString()}`);
+    setSubmitError("");
+    try {
+      // Update user profile jika nama/telepon berubah
+      if (user && (form.nama !== user.nama || form.telepon !== (user.telepon ?? ""))) {
+        await api.put("/users/me", { nama: form.nama, telepon: form.telepon });
+      }
+
+      // Buat worker profile
+      await api.post("/workers", {
+        specialty: form.specialty,
+        bio: form.bio,
+        location: form.lokasi,
+        experience_years: EXP_MAP[form.pengalaman] ?? 0,
+        category_ids: form.categoryIds,
+        services: form.layanan.trim()
+          ? [{ name: form.layanan.trim() }]
+          : [],
+      });
+
+      const selectedTitles = categories
+        .filter((c) => form.categoryIds.includes(c.id))
+        .map((c) => c.title)
+        .join(", ");
+      const params = new URLSearchParams({ nama: form.nama, kategori: selectedTitles });
+      router.push(`/daftar-pekerja/sukses?${params.toString()}`);
+    } catch (err) {
+      setSubmitError(err instanceof ApiError ? err.message : "Gagal mendaftar. Coba lagi.");
+      setLoading(false);
+    }
   }
 
   const selectedCategoryTitles = categories
     .filter((c) => form.categoryIds.includes(c.id))
     .map((c) => c.title)
     .join(", ");
+
+  if (!ready || !user) return null;
 
   return (
     <div className="w-full max-w-144 mx-auto">
@@ -153,14 +208,26 @@ export default function DaftarForm({ categories }: Props) {
             <label className="block text-label-sm font-label-sm text-on-surface-variant uppercase mb-sm">
               Kota / Wilayah Kerja
             </label>
-            <input
-              name="lokasi"
-              required
-              value={form.lokasi}
-              onChange={handleChange}
-              placeholder="Contoh: Jakarta Selatan"
-              className="w-full bg-surface-container-low border border-cream-dark rounded-xl px-lg py-md text-body-md font-body-md focus:outline-none focus:border-primary transition-all"
-            />
+            <div
+              className={`bg-surface-container-low border rounded-xl transition-all py-md flex ${
+                lokasiError ? "border-error" : "border-cream-dark focus-within:border-primary"
+              }`}
+            >
+              <LocationCombobox
+                value={form.lokasi}
+                onChange={(val) => {
+                  setForm((prev) => ({ ...prev, lokasi: val }));
+                  setLokasiError(false);
+                }}
+                placeholder="Cari kota atau provinsi..."
+              />
+            </div>
+            {lokasiError && (
+              <p className="text-error text-label-sm font-label-sm mt-sm flex items-center gap-xs">
+                <span className="material-symbols-outlined text-[14px]">error</span>
+                Pilih kota atau wilayah kerja
+              </p>
+            )}
           </div>
 
           <button
@@ -175,6 +242,20 @@ export default function DaftarForm({ categories }: Props) {
       {/* Step 1 — Keahlian */}
       {step === 1 && (
         <form onSubmit={nextStepKeahlian} className="space-y-lg">
+          <div>
+            <label className="block text-label-sm font-label-sm text-on-surface-variant uppercase mb-sm">
+              Judul Keahlian
+            </label>
+            <input
+              name="specialty"
+              required
+              value={form.specialty}
+              onChange={handleChange}
+              placeholder="Contoh: Tukang Listrik, Fotografer Pernikahan..."
+              className="w-full bg-surface-container-low border border-cream-dark rounded-xl px-lg py-md text-body-md font-body-md focus:outline-none focus:border-primary transition-all"
+            />
+          </div>
+
           <div>
             <div className="flex items-center justify-between mb-sm">
               <label className="block text-label-sm font-label-sm text-on-surface-variant uppercase">
@@ -251,6 +332,19 @@ export default function DaftarForm({ categories }: Props) {
             />
           </div>
 
+          <div>
+            <label className="block text-label-sm font-label-sm text-on-surface-variant uppercase mb-sm">
+              Layanan Utama <span className="normal-case text-on-surface-variant/60">(opsional)</span>
+            </label>
+            <input
+              name="layanan"
+              value={form.layanan}
+              onChange={handleChange}
+              placeholder="Contoh: Instalasi listrik rumah"
+              className="w-full bg-surface-container-low border border-cream-dark rounded-xl px-lg py-md text-body-md font-body-md focus:outline-none focus:border-primary transition-all"
+            />
+          </div>
+
           <div className="flex gap-lg">
             <button
               type="button"
@@ -276,9 +370,11 @@ export default function DaftarForm({ categories }: Props) {
             <ConfirmRow label="Nama" value={form.nama} />
             <ConfirmRow label="Telepon" value={`+62 ${form.telepon}`} />
             <ConfirmRow label="Lokasi" value={form.lokasi} />
+            <ConfirmRow label="Keahlian" value={form.specialty} />
             <ConfirmRow label="Kategori" value={selectedCategoryTitles || "-"} />
             <ConfirmRow label="Pengalaman" value={form.pengalaman} />
             <ConfirmRow label="Bio" value={form.bio} />
+            {form.layanan && <ConfirmRow label="Layanan" value={form.layanan} />}
           </div>
 
           <div className="bg-pale-mint/20 border border-pale-mint rounded-xl px-xl py-lg flex gap-md">
@@ -290,6 +386,13 @@ export default function DaftarForm({ categories }: Props) {
               <strong className="text-forest-deep">1×24 jam</strong> setelah pendaftaran.
             </p>
           </div>
+
+          {submitError && (
+            <div className="flex items-center gap-sm bg-error-container/20 border border-error text-error px-lg py-md rounded-xl font-body-md text-body-md">
+              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+              {submitError}
+            </div>
+          )}
 
           <div className="flex gap-lg">
             <button

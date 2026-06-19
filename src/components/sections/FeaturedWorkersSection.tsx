@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import WorkerCard from "@/components/ui/WorkerCard";
+import { resolveStorageUrl } from "@/lib/storage";
 import type { Worker } from "@/types";
 
 // ── Skeleton ──────────────────────────────────────────────
@@ -67,7 +68,7 @@ function mapWorker(w: ApiWorker): Worker {
     categoryId:       "",
     name:             w.nama,
     specialty:        w.specialty,
-    imageUrl:         w.image_url ?? "",
+    imageUrl:         resolveStorageUrl(w.image_url),
     imageAlt:         w.nama,
     rating:           w.rating,
     tags:             [],

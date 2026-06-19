@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLocation } from "@/hooks/useLocation";
+import { LocationCombobox } from "@/components/ui/LocationCombobox";
 
 export default function HeroSection() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const { lokasi, setLokasi, isDetecting, detect } = useLocation();
+  const { lokasi, setLokasi } = useLocation();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -52,29 +53,13 @@ export default function HeroSection() {
               />
             </div>
 
-            {/* Input lokasi + tombol deteksi */}
-            <div className="hidden md:flex flex-1 items-center px-lg gap-sm">
-              <span className="material-symbols-outlined text-outline">location_on</span>
-              <input
-                type="text"
+            {/* Lokasi combobox */}
+            <div className="hidden md:flex flex-1 border-l border-cream-dark">
+              <LocationCombobox
                 value={lokasi}
-                onChange={(e) => setLokasi(e.target.value)}
-                placeholder="Lokasi Anda"
-                className="flex-1 bg-transparent border-none focus:ring-0 text-body-md font-body-md outline-none min-w-0"
+                onChange={setLokasi}
+                placeholder="Pilih kota/provinsi"
               />
-              <button
-                type="button"
-                onClick={detect}
-                disabled={isDetecting}
-                title="Deteksi lokasi otomatis"
-                className="shrink-0 text-on-surface-variant hover:text-primary transition-colors disabled:opacity-50"
-              >
-                <span
-                  className={`material-symbols-outlined text-[20px] ${isDetecting ? "animate-spin" : ""}`}
-                >
-                  {isDetecting ? "progress_activity" : "my_location"}
-                </span>
-              </button>
             </div>
 
             <button

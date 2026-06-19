@@ -6,7 +6,6 @@ const LOKASI_KEY = "nyambi_lokasi";
 
 export function useLocation() {
   const [lokasi, setLokasiState] = useState("");
-  const [isDetecting, setIsDetecting] = useState(false);
 
   useEffect(() => {
     try {
@@ -23,25 +22,5 @@ export function useLocation() {
     } catch {}
   }
 
-  function detect() {
-    if (!navigator.geolocation) return;
-    setIsDetecting(true);
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        try {
-          const res = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=id`
-          );
-          const data = await res.json();
-          const nama: string = data.city || data.locality || data.principalSubdivision || "";
-          if (nama) setLokasi(nama);
-        } catch {}
-        setIsDetecting(false);
-      },
-      () => setIsDetecting(false),
-      { timeout: 10000 }
-    );
-  }
-
-  return { lokasi, setLokasi, isDetecting, detect };
+  return { lokasi, setLokasi };
 }

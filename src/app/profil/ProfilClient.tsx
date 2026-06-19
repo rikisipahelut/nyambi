@@ -12,7 +12,7 @@ const MENU = [
   { icon: "notifications", label: "Notifikasi", href: "/notifikasi", count: "1" },
 ];
 
-const SETTINGS = [
+const BASE_SETTINGS = [
   { icon: "manage_accounts", label: "Edit Profil", href: "/profil/edit" },
   { icon: "lock", label: "Ubah Password", href: "/profil/ubah-password" },
   { icon: "help", label: "Pusat Bantuan", href: "/bantuan" },
@@ -41,6 +41,14 @@ export default function ProfilClient() {
   const { user, ready, logout } = useAuth();
   const router = useRouter();
 
+  const SETTINGS = user?.is_worker
+    ? [
+        { icon: "manage_accounts", label: "Edit Profil", href: "/profil/edit" },
+        { icon: "work", label: "Edit Profil Pekerja", href: "/profil/pekerja/edit" },
+        ...BASE_SETTINGS.slice(1),
+      ]
+    : BASE_SETTINGS;
+
   useEffect(() => {
     if (ready && !user) router.replace("/masuk");
   }, [ready, user, router]);
@@ -54,8 +62,15 @@ export default function ProfilClient() {
         <div className="w-full md:w-72 shrink-0 space-y-xl">
           {/* Avatar + info */}
           <div className="bg-surface-container-low border border-cream-dark rounded-2xl p-xl text-center">
-            <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-lg">
-              <span className="text-on-primary font-bold text-headline-md">{getInitials(user.nama)}</span>
+            <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-lg">
+              {user.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.avatar} alt={user.nama} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-primary flex items-center justify-center">
+                  <span className="text-on-primary font-bold text-headline-md">{getInitials(user.nama)}</span>
+                </div>
+              )}
             </div>
             <h2 className="font-headline-md text-headline-md text-forest-deep capitalize">{user.nama}</h2>
             <p className="text-on-surface-variant font-body-md text-body-md mt-xs">{user.email}</p>
@@ -151,8 +166,8 @@ export default function ProfilClient() {
             </div>
           </section>
 
-          {/* Upgrade banner */}
-          <div className="bg-forest-deep rounded-2xl p-xl flex items-center justify-between gap-lg relative overflow-hidden">
+          {/* Upgrade banner — hanya untuk user biasa */}
+          {!user.is_worker && <div className="bg-forest-deep rounded-2xl p-xl flex items-center justify-between gap-lg relative overflow-hidden">
             <div className="absolute -right-8 -top-8 w-32 h-32 bg-cta-amber/10 rounded-full blur-2xl" aria-hidden="true" />
             <div className="z-10">
               <p className="font-body-lg text-body-lg text-surface-container-lowest">Punya keahlian?</p>
@@ -164,7 +179,7 @@ export default function ProfilClient() {
             >
               Daftar
             </Link>
-          </div>
+          </div>}
         </div>
       </div>
     </main>

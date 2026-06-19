@@ -20,8 +20,9 @@ async function request<T>(
   options: RequestInit = {},
   retry = true
 ): Promise<T> {
+  const isFormData = options.body instanceof FormData;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(!isFormData && { "Content-Type": "application/json" }),
     Accept: "application/json",
     ...(options.headers as Record<string, string>),
   };
@@ -77,7 +78,7 @@ export class ApiError extends Error {
 
 export const api = {
   get:    <T>(url: string)               => request<T>(url),
-  post:   <T>(url: string, body?: unknown) => request<T>(url, { method: "POST",   body: JSON.stringify(body) }),
+  post:   <T>(url: string, body?: unknown) => request<T>(url, { method: "POST",   body: body instanceof FormData ? body : JSON.stringify(body) }),
   put:    <T>(url: string, body?: unknown) => request<T>(url, { method: "PUT",    body: JSON.stringify(body) }),
   delete: <T>(url: string)               => request<T>(url, { method: "DELETE" }),
 };

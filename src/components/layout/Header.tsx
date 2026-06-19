@@ -76,10 +76,15 @@ export default function Header() {
                 onClick={() => setIsDropdownOpen((v) => !v)}
                 className="flex items-center gap-sm px-sm py-xs rounded-full hover:bg-surface-container-low transition-all"
               >
-                <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center shrink-0">
-                  <span className="text-on-primary font-bold text-label-sm">
-                    {getInitials(user.nama)}
-                  </span>
+                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+                  {user.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.avatar} alt={user.nama} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-primary flex items-center justify-center">
+                      <span className="text-on-primary font-bold text-label-sm">{getInitials(user.nama)}</span>
+                    </div>
+                  )}
                 </div>
                 <span className="hidden md:block font-body-md text-body-md text-on-surface capitalize max-w-24 truncate">
                   {user.nama}

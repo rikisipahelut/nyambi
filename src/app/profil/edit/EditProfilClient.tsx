@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiError } from "@/lib/api";
 
 export default function EditProfilClient() {
-  const { user, ready, updateProfile } = useAuth();
+  const { user, ready, updateProfile, updateAvatar } = useAuth();
   const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ nama: "", email: "", telepon: "" });
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (ready && !user) { router.replace("/masuk"); return; }
@@ -23,11 +27,23 @@ export default function EditProfilClient() {
     setError("");
   }
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    const url = URL.createObjectURL(file);
+    setAvatarPreview(url);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
+      if (avatarFile) {
+        await updateAvatar(avatarFile);
+        setAvatarFile(null);
+      }
       await updateProfile({ nama: form.nama, email: form.email, telepon: form.telepon });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -40,18 +56,42 @@ export default function EditProfilClient() {
 
   if (!ready || !user) return null;
 
+  const avatarSrc = avatarPreview ?? user.avatar ?? null;
+  const initials = (form.nama || user.nama).slice(0, 2).toUpperCase() || "?";
+
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-120 space-y-lg">
-      <div className="flex items-center gap-xl mb-xl">
-        <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shrink-0">
-          <span className="text-on-primary font-bold text-headline-md">
-            {form.nama.slice(0, 2).toUpperCase() || "?"}
-          </span>
-        </div>
-        <div>
-          <p className="font-body-lg text-body-lg text-forest-deep capitalize">{form.nama || "Nama Anda"}</p>
-          <p className="text-on-surface-variant font-body-md text-body-md">{form.email}</p>
-        </div>
+      {/* Avatar upload */}
+      <div className="flex flex-col items-center gap-md mb-xl">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="relative w-24 h-24 rounded-full overflow-hidden group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          aria-label="Ubah foto profil"
+        >
+          {avatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-primary flex items-center justify-center">
+              <span className="text-on-primary font-bold text-headline-md">{initials}</span>
+            </div>
+          )}
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-forest-deep/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="material-symbols-outlined text-surface-container-lowest text-[24px]">photo_camera</span>
+          </div>
+        </button>
+        <p className="text-label-sm text-on-surface-variant">
+          {avatarFile ? avatarFile.name : "Klik foto untuk mengubah"}
+        </p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleAvatarChange}
+          className="hidden"
+        />
       </div>
 
       <div>
@@ -96,7 +136,9 @@ export default function EditProfilClient() {
         </button>
         <button type="submit" disabled={loading}
           className="flex-1 py-md rounded-full bg-primary text-on-primary font-bold hover:bg-primary-container transition-all active:scale-95 disabled:opacity-70 flex items-center justify-center gap-sm">
-          {loading ? <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>Menyimpan...</> : "Simpan"}
+          {loading
+            ? <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>Menyimpan...</>
+            : "Simpan"}
         </button>
       </div>
     </form>

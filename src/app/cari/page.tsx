@@ -3,6 +3,7 @@ import Link from "next/link";
 import WorkerCard from "@/components/ui/WorkerCard";
 import CategoryCard from "@/components/ui/CategoryCard";
 import SearchBar from "./SearchBar";
+import { resolveStorageUrl } from "@/lib/storage";
 import type { Worker, Category } from "@/types";
 
 // ── Types ─────────────────────────────────────────────────
@@ -26,7 +27,7 @@ function mapWorker(w: ApiWorker): Worker {
     categoryId: "",
     name: w.nama,
     specialty: w.specialty,
-    imageUrl: w.image_url ?? "",
+    imageUrl: resolveStorageUrl(w.image_url),
     imageAlt: w.nama,
     rating: w.rating,
     tags: [],
