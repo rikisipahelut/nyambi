@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api";
 
-export default function MasukForm() {
+export default function MasukForm({ from }: { from?: string }) {
   const { login } = useAuth();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +25,7 @@ export default function MasukForm() {
     setError("");
     try {
       await login(form.email, form.password);
-      router.push("/profil");
+      router.push(from?.startsWith("/") ? from : "/profil");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Terjadi kesalahan. Coba lagi.");
     } finally {

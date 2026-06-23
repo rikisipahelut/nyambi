@@ -1,15 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
 
-const MENU = [
-  { icon: "shopping_bag", label: "Riwayat Pesanan", href: "/riwayat-pesanan", count: "3" },
-  { icon: "favorite", label: "Pekerja Favorit", href: "/pekerja-favorit", count: "5" },
-  { icon: "rate_review", label: "Ulasan Saya", href: "/ulasan-saya", count: "2" },
-  { icon: "notifications", label: "Notifikasi", href: "/notifikasi", count: "1" },
+interface Stats {
+  orders: number;
+  favorites: number;
+  reviews: number;
+  unread_notifications: number;
+}
+
+const MENU_CONFIG = [
+  { icon: "shopping_bag", label: "Riwayat Pesanan", href: "/riwayat-pesanan", key: "orders" as keyof Stats },
+  { icon: "favorite", label: "Pekerja Favorit", href: "/pekerja-favorit", key: "favorites" as keyof Stats },
+  { icon: "rate_review", label: "Ulasan Saya", href: "/ulasan-saya", key: "reviews" as keyof Stats },
+  { icon: "notifications", label: "Notifikasi", href: "/notifikasi", key: "unread_notifications" as keyof Stats },
 ];
 
 const BASE_SETTINGS = [
@@ -40,11 +48,18 @@ function formatDate(iso: string) {
 export default function ProfilClient() {
   const { user, ready, logout } = useAuth();
   const router = useRouter();
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    if (!ready || !user) return;
+    api.get<{ data: Stats }>("/users/me/stats").then((res) => setStats(res.data)).catch(() => {});
+  }, [ready, user]);
 
   const SETTINGS = user?.is_worker
     ? [
         { icon: "manage_accounts", label: "Edit Profil", href: "/profil/edit" },
         { icon: "work", label: "Edit Profil Pekerja", href: "/profil/pekerja/edit" },
+        { icon: "badge", label: "Lihat Profil Pekerja", href: "/pekerja/saya" },
         ...BASE_SETTINGS.slice(1),
       ]
     : BASE_SETTINGS;
@@ -92,12 +107,14 @@ export default function ProfilClient() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-md">
             {[
-              { label: "Pesanan", value: "3" },
-              { label: "Ulasan", value: "2" },
-              { label: "Favorit", value: "5" },
+              { label: "Pesanan", value: stats?.orders },
+              { label: "Ulasan", value: stats?.reviews },
+              { label: "Favorit", value: stats?.favorites },
             ].map(({ label, value }) => (
               <div key={label} className="bg-surface-container-low border border-cream-dark rounded-xl p-md text-center">
-                <p className="font-headline-md text-headline-md text-primary">{value}</p>
+                <p className="font-headline-md text-headline-md text-primary">
+                  {value ?? <span className="inline-block w-6 h-5 bg-cream-dark rounded animate-pulse" />}
+                </p>
                 <p className="text-on-surface-variant text-label-sm font-label-sm">{label}</p>
               </div>
             ))}
@@ -110,28 +127,35 @@ export default function ProfilClient() {
           <section>
             <h3 className="font-headline-md text-headline-md text-forest-deep mb-md">Aktivitas</h3>
             <div className="bg-surface-container-low border border-cream-dark rounded-2xl divide-y divide-cream-dark">
-              {MENU.map(({ icon, label, href, count }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  className="flex items-center justify-between px-xl py-lg hover:bg-surface-container transition-colors group"
-                >
-                  <div className="flex items-center gap-md">
-                    <span className="material-symbols-outlined text-primary text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {icon}
-                    </span>
-                    <span className="font-body-lg text-body-lg text-on-surface">{label}</span>
-                  </div>
-                  <div className="flex items-center gap-sm">
-                    <span className="bg-primary text-on-primary text-label-sm font-label-sm px-sm py-xs rounded-full min-w-5.5 text-center">
-                      {count}
-                    </span>
-                    <span className="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:text-primary transition-colors">
-                      chevron_right
-                    </span>
-                  </div>
-                </Link>
-              ))}
+              {MENU_CONFIG.map(({ icon, label, href, key }) => {
+                const count = stats?.[key];
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    className="flex items-center justify-between px-xl py-lg hover:bg-surface-container transition-colors group"
+                  >
+                    <div className="flex items-center gap-md">
+                      <span className="material-symbols-outlined text-primary text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                        {icon}
+                      </span>
+                      <span className="font-body-lg text-body-lg text-on-surface">{label}</span>
+                    </div>
+                    <div className="flex items-center gap-sm">
+                      {stats === null ? (
+                        <span className="inline-block w-6 h-5 bg-cream-dark rounded-full animate-pulse" />
+                      ) : count != null && count > 0 ? (
+                        <span className="bg-primary text-on-primary text-label-sm font-label-sm px-sm py-xs rounded-full min-w-5.5 text-center">
+                          {count}
+                        </span>
+                      ) : null}
+                      <span className="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:text-primary transition-colors">
+                        chevron_right
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 

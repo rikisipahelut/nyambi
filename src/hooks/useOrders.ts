@@ -52,7 +52,7 @@ export function useOrders() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get<{ data: ApiOrder[] }>("/orders")
+    api.get<{ data: ApiOrder[] }>("/orders?as=customer")
       .then((res) => setOrders(res.data.map(mapOrder)))
       .catch(() => {})
       .finally(() => setLoading(false));

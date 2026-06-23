@@ -52,30 +52,31 @@ export function useAuth() {
 
   useEffect(() => {
     async function restore() {
-      // Immediately show cached user so UI doesn't flash
       const cached = loadUser();
+      const token = loadStoredToken();
+
       if (cached) setUser(cached);
 
-      const token = loadStoredToken();
-      if (token) {
-        setAccessToken(token);
-        try {
-          // Verify token is still valid by fetching profile
-          const res = await api.get<{ data: Record<string, unknown> }>("/users/me");
-          const u = mapMe(res.data);
-          saveUser(u);
-          setUser(u);
-        } catch (err) {
-          if (err instanceof ApiError && err.status === 401) {
-            // Token expired — api.ts already tried refresh internally
-            clearSession();
-            setUser(null);
-          }
-          // Other errors (network) — keep cached user
-        }
+      if (!token) {
+        setReady(true);
+        return;
       }
 
-      setReady(true);
+      setAccessToken(token);
+      setReady(true); // Langsung ready dari cache, tidak tunggu network
+
+      // Verifikasi token di background — update state jika perlu
+      try {
+        const res = await api.get<{ data: Record<string, unknown> }>("/users/me");
+        const u = mapMe(res.data);
+        saveUser(u);
+        setUser(u);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          clearSession();
+          setUser(null);
+        }
+      }
     }
     restore();
   }, []);

@@ -6,7 +6,13 @@ export const metadata = {
   description: "Masuk ke akun Nyambi Anda.",
 };
 
-export default function MasukPage() {
+export default async function MasukPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const { from } = await searchParams;
+
   return (
     <>
       <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">
@@ -28,7 +34,7 @@ export default function MasukPage() {
           </p>
         </div>
 
-        <MasukForm />
+        <MasukForm from={from} />
       </main>
     </>
   );
