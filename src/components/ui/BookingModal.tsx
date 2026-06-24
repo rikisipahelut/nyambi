@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addOrder } from "@/hooks/useOrders";
+import { ApiError } from "@/lib/api";
 
 interface BookingModalProps {
   workerId: string;
@@ -22,6 +23,7 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState<FormState>({
     tanggal: "",
     waktu: "",
@@ -31,7 +33,16 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === "telepon") {
+      const digits = value.replace(/\D/g, "").slice(0, 12);
+      let formatted = digits;
+      if (digits.length > 7)      formatted = `${digits.slice(0,3)}-${digits.slice(3,7)}-${digits.slice(7)}`;
+      else if (digits.length > 3) formatted = `${digits.slice(0,3)}-${digits.slice(3)}`;
+      setForm((prev) => ({ ...prev, telepon: formatted }));
+      return;
+    }
+    setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   function handleClose() {
@@ -40,7 +51,13 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const rawDigits = form.telepon.replace(/\D/g, "");
+    if (rawDigits.length < 9) {
+      setError("Nomor telepon minimal 9 angka.");
+      return;
+    }
     setLoading(true);
+    setError("");
 
     try {
       const order = await addOrder({
@@ -49,7 +66,7 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
         waktu: form.waktu,
         deskripsi: form.deskripsi,
         alamat: form.alamat,
-        telepon: form.telepon,
+        telepon: form.telepon.replace(/\D/g, ""),
       });
 
       const params = new URLSearchParams({
@@ -60,7 +77,8 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
       });
 
       router.push(`/pesanan/${order.orderId}?${params.toString()}`);
-    } catch {
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Gagal membuat pesanan. Coba lagi.");
       setLoading(false);
     }
   }
@@ -182,6 +200,13 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
                     />
                   </div>
                 </div>
+
+                {error && (
+                  <div className="flex items-center gap-sm bg-error-container/20 border border-error text-error px-lg py-md rounded-xl font-body-md text-body-md">
+                    <span className="material-symbols-outlined text-[18px] shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+                    {error}
+                  </div>
+                )}
 
                 <div className="flex gap-lg pt-md pb-lg">
                   <button

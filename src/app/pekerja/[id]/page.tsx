@@ -3,6 +3,7 @@ import PekerjaAuthGate from "./PekerjaAuthGate";
 
 interface ApiWorkerFull {
   id: string;
+  user_id: string;
   nama: string;
   specialty: string;
   location: string | null;

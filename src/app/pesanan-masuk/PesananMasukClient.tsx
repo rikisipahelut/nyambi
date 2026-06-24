@@ -4,25 +4,32 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useOrders } from "@/hooks/useOrders";
+import { api, ApiError } from "@/lib/api";
 import type { OrderStatus } from "@/hooks/useOrders";
 
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: string }> = {
-  menunggu:     { label: "Menunggu Konfirmasi", color: "bg-cta-amber/15 text-cta-amber",           icon: "schedule"  },
-  dikonfirmasi: { label: "Dikonfirmasi",         color: "bg-pale-mint/30 text-secondary",            icon: "check_circle" },
-  selesai:      { label: "Selesai",              color: "bg-primary/10 text-primary",                icon: "task_alt"  },
-  dibatalkan:   { label: "Dibatalkan",           color: "bg-error-container text-on-error-container", icon: "cancel"   },
-};
-
-function formatTanggal(tanggal: string) {
-  if (!tanggal) return "-";
-  return new Date(tanggal).toLocaleDateString("id-ID", {
-    weekday: "short", day: "numeric", month: "short", year: "numeric",
-  });
+interface IncomingOrder {
+  id: string;
+  customer: { id: string; nama: string; telepon: string | null } | null;
+  tanggal: string;
+  waktu: string;
+  deskripsi: string | null;
+  alamat: string;
+  telepon: string;
+  status: OrderStatus;
+  created_at: string;
 }
 
-function formatOrderNo(id: string) {
-  return `INV-${id.slice(0, 8).toUpperCase()}`;
+const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: string }> = {
+  menunggu:     { label: "Menunggu Konfirmasi", color: "bg-cta-amber/15 text-cta-amber",            icon: "schedule"     },
+  dikonfirmasi: { label: "Dikonfirmasi",         color: "bg-pale-mint/30 text-secondary",             icon: "check_circle" },
+  selesai:      { label: "Selesai",              color: "bg-primary/10 text-primary",                 icon: "task_alt"     },
+  dibatalkan:   { label: "Dibatalkan",           color: "bg-error-container text-on-error-container", icon: "cancel"       },
+};
+
+function formatTanggal(t: string) {
+  return new Date(t).toLocaleDateString("id-ID", {
+    weekday: "short", day: "numeric", month: "short", year: "numeric",
+  });
 }
 
 function formatCreated(iso: string) {
@@ -31,17 +38,38 @@ function formatCreated(iso: string) {
   });
 }
 
-export default function RiwayatClient() {
+export default function PesananMasukClient() {
   const { user, ready } = useAuth();
   const router = useRouter();
-  const { orders, loading, cancelOrder, completeOrder } = useOrders();
+  const [orders, setOrders] = useState<IncomingOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderStatus | "semua">("semua");
-  const [cancelling, setCancelling] = useState<string | null>(null);
-  const [completing, setCompleting] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    if (ready && !user) router.replace("/masuk?from=/riwayat-pesanan");
+    if (!ready) return;
+    if (!user) { router.replace("/masuk?from=/pesanan-masuk"); return; }
+    if (!user.is_worker) { router.replace("/profil"); return; }
+
+    api.get<{ data: IncomingOrder[] }>("/orders")
+      .then((res) => setOrders(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [ready, user, router]);
+
+  async function handleAction(orderId: string, action: "confirm" | "complete") {
+    setActionLoading(orderId + action);
+    try {
+      await api.put(`/orders/${orderId}/${action === "confirm" ? "confirm" : "complete"}`);
+      setOrders((prev) => prev.map((o) =>
+        o.id === orderId ? { ...o, status: action === "confirm" ? "dikonfirmasi" : "selesai" } : o
+      ));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Gagal memperbarui status.");
+    } finally {
+      setActionLoading(null);
+    }
+  }
 
   if (!ready || !user) return null;
 
@@ -59,20 +87,12 @@ export default function RiwayatClient() {
     return (
       <div className="text-center py-5xl">
         <div className="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-2xl">
-          <span className="material-symbols-outlined text-outline text-[48px]">shopping_bag</span>
+          <span className="material-symbols-outlined text-outline text-[48px]">inbox</span>
         </div>
-        <h2 className="font-headline-md text-headline-md text-forest-deep mb-md">
-          Belum ada pesanan
-        </h2>
-        <p className="text-text-mid font-body-md max-w-128 mx-auto mb-3xl">
-          Pesanan yang Anda buat akan muncul di sini. Mulai cari pekerja sekarang!
+        <h2 className="font-headline-md text-headline-md text-forest-deep mb-md">Belum ada pesanan masuk</h2>
+        <p className="text-text-mid font-body-md max-w-128 mx-auto">
+          Pesanan dari pelanggan akan muncul di sini.
         </p>
-        <Link
-          href="/kategori"
-          className="inline-block px-4xl py-md rounded-full bg-primary text-on-primary font-bold hover:bg-primary-container transition-all"
-        >
-          Cari Jasa Sekarang
-        </Link>
       </div>
     );
   }
@@ -92,9 +112,7 @@ export default function RiwayatClient() {
       {/* Filter tabs */}
       <div className="flex gap-sm flex-wrap mb-3xl">
         {(["semua", "menunggu", "dikonfirmasi", "selesai", "dibatalkan"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setFilter(tab)}
+          <button key={tab} onClick={() => setFilter(tab)}
             className={`px-lg py-sm rounded-full font-body-md text-body-md font-bold transition-all ${
               filter === tab
                 ? "bg-primary text-on-primary"
@@ -120,19 +138,17 @@ export default function RiwayatClient() {
           {filtered.map((order) => {
             const cfg = STATUS_CONFIG[order.status];
             return (
-              <div key={order.orderId} className="bg-surface-container-low border border-cream-dark rounded-2xl overflow-hidden">
+              <div key={order.id} className="bg-surface-container-low border border-cream-dark rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-xl py-lg border-b border-cream-dark">
                   <div>
-                    <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Nomor Pesanan</p>
-                    <p className="font-mono text-sm text-forest-deep tracking-wider">
-                      {formatOrderNo(order.orderId)}
+                    <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Dari</p>
+                    <p className="font-body-lg text-body-lg text-forest-deep font-bold">
+                      {order.customer?.nama ?? "Pelanggan"}
                     </p>
                   </div>
                   <span className={`${cfg.color} px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs`}>
-                    <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {cfg.icon}
-                    </span>
+                    <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>{cfg.icon}</span>
                     {cfg.label}
                   </span>
                 </div>
@@ -140,21 +156,18 @@ export default function RiwayatClient() {
                 {/* Body */}
                 <div className="px-xl py-lg space-y-md">
                   <div className="flex items-start gap-md">
-                    <span className="material-symbols-outlined text-on-surface-variant text-[18px] mt-xs shrink-0">person</span>
+                    <span className="material-symbols-outlined text-on-surface-variant text-[18px] mt-xs shrink-0">calendar_today</span>
                     <div>
-                      <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Pekerja</p>
-                      <p className="font-body-lg text-body-lg text-on-surface">{order.worker}</p>
-                      <p className="text-on-surface-variant font-body-md text-body-md">{order.specialty}</p>
+                      <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Jadwal</p>
+                      <p className="font-body-md text-body-md text-on-surface">{formatTanggal(order.tanggal)}, {order.waktu} WIB</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-md">
-                    <span className="material-symbols-outlined text-on-surface-variant text-[18px] mt-xs shrink-0">calendar_today</span>
+                    <span className="material-symbols-outlined text-on-surface-variant text-[18px] mt-xs shrink-0">location_on</span>
                     <div>
-                      <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Jadwal</p>
-                      <p className="font-body-md text-body-md text-on-surface">
-                        {formatTanggal(order.tanggal)}, {order.waktu} WIB
-                      </p>
+                      <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Alamat</p>
+                      <p className="font-body-md text-body-md text-on-surface">{order.alamat}</p>
                     </div>
                   </div>
 
@@ -167,49 +180,34 @@ export default function RiwayatClient() {
                       </div>
                     </div>
                   )}
+
+                  <div className="flex items-start gap-md">
+                    <span className="material-symbols-outlined text-on-surface-variant text-[18px] mt-xs shrink-0">call</span>
+                    <div>
+                      <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">Kontak</p>
+                      <p className="font-body-md text-body-md text-on-surface">+62 {order.telepon}</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Footer */}
                 <div className="px-xl py-md bg-surface-container border-t border-cream-dark flex items-center justify-between gap-md flex-wrap">
                   <p className="text-on-surface-variant text-label-sm font-label-sm">
-                    Dipesan {formatCreated(order.createdAt)}
+                    Diterima {formatCreated(order.created_at)}
                   </p>
-                  <div className="flex gap-md">
+                  <div className="flex gap-md flex-wrap">
                     {order.status === "menunggu" && (
                       <button
-                        disabled={cancelling === order.orderId}
-                        onClick={async () => {
-                          setCancelling(order.orderId);
-                          try { await cancelOrder(order.orderId); } finally { setCancelling(null); }
-                        }}
-                        className="px-lg py-xs rounded-full border border-error text-error font-bold text-label-sm hover:bg-error-container transition-all disabled:opacity-50"
-                      >
-                        {cancelling === order.orderId ? "Membatalkan..." : "Batalkan"}
-                      </button>
-                    )}
-                    {order.status === "dikonfirmasi" && (
-                      <button
-                        disabled={completing === order.orderId}
-                        onClick={async () => {
-                          setCompleting(order.orderId);
-                          try { await completeOrder(order.orderId); } finally { setCompleting(null); }
-                        }}
+                        disabled={!!actionLoading}
+                        onClick={() => handleAction(order.id, "confirm")}
                         className="px-lg py-xs rounded-full bg-secondary text-on-primary font-bold text-label-sm hover:opacity-90 transition-all disabled:opacity-50"
                       >
-                        {completing === order.orderId ? "Memproses..." : "Tandai Selesai"}
+                        {actionLoading === order.id + "confirm" ? "Memproses..." : "Konfirmasi"}
                       </button>
                     )}
-                    {order.workerId && (
-                      <Link
-                        href={`/pekerja/${order.workerId}`}
-                        className="px-lg py-xs rounded-full border border-primary text-primary font-bold text-label-sm hover:bg-primary hover:text-on-primary transition-all"
-                      >
-                        Lihat Pekerja
-                      </Link>
-                    )}
                     <Link
-                      href={`/orders/${order.orderId}`}
-                      className="px-lg py-xs rounded-full bg-primary text-on-primary font-bold text-label-sm hover:bg-primary-container transition-all"
+                      href={`/orders/${order.id}`}
+                      className="px-lg py-xs rounded-full border border-primary text-primary font-bold text-label-sm hover:bg-primary hover:text-on-primary transition-all"
                     >
                       Detail
                     </Link>

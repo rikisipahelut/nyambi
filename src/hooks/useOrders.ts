@@ -65,7 +65,14 @@ export function useOrders() {
     );
   }
 
-  return { orders, loading, cancelOrder };
+  async function completeOrder(orderId: string) {
+    await api.put(`/orders/${orderId}/complete`);
+    setOrders((prev) =>
+      prev.map((o) => (o.orderId === orderId ? { ...o, status: "selesai" } : o))
+    );
+  }
+
+  return { orders, loading, cancelOrder, completeOrder };
 }
 
 // Standalone — dipanggil dari BookingModal

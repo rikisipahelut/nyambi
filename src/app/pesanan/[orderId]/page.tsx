@@ -46,7 +46,7 @@ export default async function KonfirmasiPesananPage({
               <p className="text-label-sm font-label-sm text-on-surface-variant uppercase">
                 Nomor Pesanan
               </p>
-              <p className="font-headline-md text-headline-md text-forest-deep">{orderId}</p>
+              <p className="font-headline-md text-headline-md text-forest-deep">INV-{orderId.slice(0, 8).toUpperCase()}</p>
             </div>
             <span className="bg-cta-amber/15 text-cta-amber px-md py-xs rounded-full font-bold text-label-sm flex items-center gap-xs">
               <span className="w-2 h-2 rounded-full bg-cta-amber" />

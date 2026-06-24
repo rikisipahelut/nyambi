@@ -11,13 +11,18 @@ interface Stats {
   favorites: number;
   reviews: number;
   unread_notifications: number;
+  incoming_orders: number;
 }
 
 const MENU_CONFIG = [
-  { icon: "shopping_bag", label: "Riwayat Pesanan", href: "/riwayat-pesanan", key: "orders" as keyof Stats },
-  { icon: "favorite", label: "Pekerja Favorit", href: "/pekerja-favorit", key: "favorites" as keyof Stats },
-  { icon: "rate_review", label: "Ulasan Saya", href: "/ulasan-saya", key: "reviews" as keyof Stats },
-  { icon: "notifications", label: "Notifikasi", href: "/notifikasi", key: "unread_notifications" as keyof Stats },
+  { icon: "shopping_bag", label: "Riwayat Pesanan", href: "/riwayat-pesanan",  key: "orders" as keyof Stats | null },
+  { icon: "favorite",     label: "Pekerja Favorit", href: "/pekerja-favorit",  key: "favorites" as keyof Stats | null },
+  { icon: "rate_review",  label: "Ulasan Saya",     href: "/ulasan-saya",      key: "reviews" as keyof Stats | null },
+  { icon: "notifications",label: "Notifikasi",      href: "/notifikasi",       key: "unread_notifications" as keyof Stats | null },
+];
+
+const WORKER_MENU = [
+  { icon: "inbox", label: "Pesanan Masuk", href: "/pesanan-masuk", key: "incoming_orders" as keyof Stats | null },
 ];
 
 const BASE_SETTINGS = [
@@ -63,6 +68,8 @@ export default function ProfilClient() {
         ...BASE_SETTINGS.slice(1),
       ]
     : BASE_SETTINGS;
+
+  const activityMenu = user?.is_worker ? [...WORKER_MENU, ...MENU_CONFIG] : MENU_CONFIG;
 
   useEffect(() => {
     if (ready && !user) router.replace("/masuk");
@@ -127,8 +134,8 @@ export default function ProfilClient() {
           <section>
             <h3 className="font-headline-md text-headline-md text-forest-deep mb-md">Aktivitas</h3>
             <div className="bg-surface-container-low border border-cream-dark rounded-2xl divide-y divide-cream-dark">
-              {MENU_CONFIG.map(({ icon, label, href, key }) => {
-                const count = stats?.[key];
+              {activityMenu.map(({ icon, label, href, key }) => {
+                const count = key ? stats?.[key] : null;
                 return (
                   <Link
                     key={label}

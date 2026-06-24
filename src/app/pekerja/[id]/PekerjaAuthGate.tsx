@@ -9,6 +9,7 @@ import BookingModal from "@/components/ui/BookingModal";
 
 interface WorkerFull {
   id: string;
+  user_id: string;
   nama: string;
   specialty: string;
   location: string | null;
@@ -146,7 +147,9 @@ export default function PekerjaAuthGate({ worker }: { worker: WorkerFull }) {
               </div>
             )}
 
-            <BookingModal workerId={worker.id} workerName={worker.nama} specialty={worker.specialty} />
+            {worker.user_id !== user.id && (
+              <BookingModal workerId={worker.id} workerName={worker.nama} specialty={worker.specialty} />
+            )}
           </div>
         </div>
 
