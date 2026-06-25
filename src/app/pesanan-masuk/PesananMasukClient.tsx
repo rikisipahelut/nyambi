@@ -16,6 +16,7 @@ interface IncomingOrder {
   alamat: string;
   telepon: string;
   status: OrderStatus;
+  cancellation_reason: string | null;
   created_at: string;
 }
 
@@ -24,6 +25,7 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: s
   dikonfirmasi: { label: "Dikonfirmasi",         color: "bg-pale-mint/30 text-secondary",             icon: "check_circle" },
   selesai:      { label: "Selesai",              color: "bg-primary/10 text-primary",                 icon: "task_alt"     },
   dibatalkan:   { label: "Dibatalkan",           color: "bg-error-container text-on-error-container", icon: "cancel"       },
+  kadaluarsa:   { label: "Kadaluarsa",           color: "bg-surface-container text-on-surface-variant", icon: "event_busy" },
 };
 
 function formatTanggal(t: string) {
@@ -45,27 +47,60 @@ export default function PesananMasukClient() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderStatus | "semua">("semua");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [orderErrors, setOrderErrors] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  type PagedResponse = { data: IncomingOrder[]; meta: { total: number; page: number; total_pages: number } };
 
   useEffect(() => {
     if (!ready) return;
     if (!user) { router.replace("/masuk?from=/pesanan-masuk"); return; }
     if (!user.is_worker) { router.replace("/profil"); return; }
 
-    api.get<{ data: IncomingOrder[] }>("/orders")
-      .then((res) => setOrders(res.data))
+    api.get<PagedResponse>("/orders?page=1")
+      .then((res) => {
+        setOrders(res.data);
+        setTotalPages(res.meta.total_pages);
+        setTotal(res.meta.total);
+        setPage(1);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [ready, user, router]);
 
-  async function handleAction(orderId: string, action: "confirm" | "complete") {
-    setActionLoading(orderId + action);
+  async function loadMore() {
+    const next = page + 1;
+    setLoadingMore(true);
     try {
-      await api.put(`/orders/${orderId}/${action === "confirm" ? "confirm" : "complete"}`);
-      setOrders((prev) => prev.map((o) =>
-        o.id === orderId ? { ...o, status: action === "confirm" ? "dikonfirmasi" : "selesai" } : o
-      ));
+      const res = await api.get<PagedResponse>(`/orders?page=${next}`);
+      setOrders((prev) => [...prev, ...res.data]);
+      setPage(next);
+      setTotalPages(res.meta.total_pages);
+      setTotal(res.meta.total);
+    } catch { /* biarkan */ } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  async function handleConfirm(orderId: string) {
+    setActionLoading(orderId);
+    setOrderErrors((prev) => ({ ...prev, [orderId]: "" }));
+    try {
+      await api.put(`/orders/${orderId}/confirm`);
+      setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "dikonfirmasi" } : o));
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Gagal memperbarui status.");
+      const message = err instanceof ApiError ? err.message : "Gagal mengkonfirmasi pesanan.";
+      setOrderErrors((prev) => ({ ...prev, [orderId]: message }));
+      try {
+        const fresh = await api.get<PagedResponse>("/orders?page=1");
+        setOrders(fresh.data);
+        setTotalPages(fresh.meta.total_pages);
+        setTotal(fresh.meta.total);
+        setPage(1);
+      } catch { /* biarkan */ }
     } finally {
       setActionLoading(null);
     }
@@ -103,6 +138,7 @@ export default function PesananMasukClient() {
     dikonfirmasi: orders.filter((o) => o.status === "dikonfirmasi").length,
     selesai:      orders.filter((o) => o.status === "selesai").length,
     dibatalkan:   orders.filter((o) => o.status === "dibatalkan").length,
+    kadaluarsa:   orders.filter((o) => o.status === "kadaluarsa").length,
   };
 
   const filtered = filter === "semua" ? orders : orders.filter((o) => o.status === filter);
@@ -111,7 +147,7 @@ export default function PesananMasukClient() {
     <div>
       {/* Filter tabs */}
       <div className="flex gap-sm flex-wrap mb-3xl">
-        {(["semua", "menunggu", "dikonfirmasi", "selesai", "dibatalkan"] as const).map((tab) => (
+        {(["semua", "menunggu", "dikonfirmasi", "selesai", "dibatalkan", "kadaluarsa"] as const).map((tab) => (
           <button key={tab} onClick={() => setFilter(tab)}
             className={`px-lg py-sm rounded-full font-body-md text-body-md font-bold transition-all ${
               filter === tab
@@ -136,6 +172,7 @@ export default function PesananMasukClient() {
       ) : (
         <div className="space-y-xl">
           {filtered.map((order) => {
+
             const cfg = STATUS_CONFIG[order.status];
             return (
               <div key={order.id} className="bg-surface-container-low border border-cream-dark rounded-2xl overflow-hidden">
@@ -181,6 +218,16 @@ export default function PesananMasukClient() {
                     </div>
                   )}
 
+                  {order.status === "dibatalkan" && order.cancellation_reason && (
+                    <div className="flex items-start gap-md">
+                      <span className="material-symbols-outlined text-error text-[18px] mt-xs shrink-0">info</span>
+                      <div>
+                        <p className="text-label-sm font-label-sm text-error uppercase">Alasan Pembatalan</p>
+                        <p className="font-body-md text-body-md text-on-surface">{order.cancellation_reason}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-start gap-md">
                     <span className="material-symbols-outlined text-on-surface-variant text-[18px] mt-xs shrink-0">call</span>
                     <div>
@@ -191,31 +238,51 @@ export default function PesananMasukClient() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-xl py-md bg-surface-container border-t border-cream-dark flex items-center justify-between gap-md flex-wrap">
-                  <p className="text-on-surface-variant text-label-sm font-label-sm">
-                    Diterima {formatCreated(order.created_at)}
-                  </p>
-                  <div className="flex gap-md flex-wrap">
-                    {order.status === "menunggu" && (
-                      <button
-                        disabled={!!actionLoading}
-                        onClick={() => handleAction(order.id, "confirm")}
-                        className="px-lg py-xs rounded-full bg-secondary text-on-primary font-bold text-label-sm hover:opacity-90 transition-all disabled:opacity-50"
+                <div className="px-xl py-md bg-surface-container border-t border-cream-dark flex flex-col gap-sm">
+                  {orderErrors[order.id] && (
+                    <div className="flex items-center gap-xs text-error text-label-sm font-label-sm bg-error-container rounded-lg px-md py-xs">
+                      <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+                      {orderErrors[order.id]}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between gap-md flex-wrap">
+                    <p className="text-on-surface-variant text-label-sm font-label-sm">
+                      Diterima {formatCreated(order.created_at)}
+                    </p>
+                    <div className="flex gap-md flex-wrap">
+                      {order.status === "menunggu" && (
+                        <button
+                          disabled={actionLoading === order.id}
+                          onClick={() => handleConfirm(order.id)}
+                          className="px-lg py-xs rounded-full bg-secondary text-on-primary font-bold text-label-sm hover:opacity-90 transition-all disabled:opacity-50"
+                        >
+                          {actionLoading === order.id ? "Memproses..." : "Konfirmasi"}
+                        </button>
+                      )}
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="px-lg py-xs rounded-full border border-primary text-primary font-bold text-label-sm hover:bg-primary hover:text-on-primary transition-all"
                       >
-                        {actionLoading === order.id + "confirm" ? "Memproses..." : "Konfirmasi"}
-                      </button>
-                    )}
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="px-lg py-xs rounded-full border border-primary text-primary font-bold text-label-sm hover:bg-primary hover:text-on-primary transition-all"
-                    >
-                      Detail
-                    </Link>
+                        Detail
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {page < totalPages && (
+        <div className="text-center mt-3xl">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-4xl py-md rounded-full border border-primary text-primary font-bold font-body-md hover:bg-primary hover:text-on-primary transition-all disabled:opacity-50"
+          >
+            {loadingMore ? "Memuat..." : `Muat Lebih (${total - orders.length} tersisa)`}
+          </button>
         </div>
       )}
     </div>

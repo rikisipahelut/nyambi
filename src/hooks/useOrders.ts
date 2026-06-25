@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
-export type OrderStatus = "menunggu" | "dikonfirmasi" | "selesai" | "dibatalkan";
+export type OrderStatus = "menunggu" | "dikonfirmasi" | "selesai" | "dibatalkan" | "kadaluarsa";
 
 export interface Order {
   orderId: string;
@@ -16,6 +16,7 @@ export interface Order {
   alamat: string;
   telepon: string;
   status: OrderStatus;
+  cancellationReason: string | null;
   createdAt: string;
 }
 
@@ -28,22 +29,24 @@ interface ApiOrder {
   alamat: string;
   telepon: string;
   status: OrderStatus;
+  cancellation_reason: string | null;
   created_at: string;
 }
 
 function mapOrder(o: ApiOrder): Order {
   return {
-    orderId:   o.id,
-    worker:    o.worker?.nama ?? "",
-    specialty: o.worker?.specialty ?? "",
-    workerId:  o.worker?.id ?? "",
-    tanggal:   o.tanggal,
-    waktu:     o.waktu,
-    deskripsi: o.deskripsi,
-    alamat:    o.alamat,
-    telepon:   o.telepon,
-    status:    o.status,
-    createdAt: o.created_at,
+    orderId:            o.id,
+    worker:             o.worker?.nama ?? "",
+    specialty:          o.worker?.specialty ?? "",
+    workerId:           o.worker?.id ?? "",
+    tanggal:            o.tanggal,
+    waktu:              o.waktu,
+    deskripsi:          o.deskripsi,
+    alamat:             o.alamat,
+    telepon:            o.telepon,
+    status:             o.status,
+    cancellationReason: o.cancellation_reason ?? null,
+    createdAt:          o.created_at,
   };
 }
 
@@ -58,10 +61,10 @@ export function useOrders() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function cancelOrder(orderId: string) {
-    await api.put(`/orders/${orderId}/cancel`);
+  async function cancelOrder(orderId: string, reason: string) {
+    await api.put(`/orders/${orderId}/cancel`, { reason });
     setOrders((prev) =>
-      prev.map((o) => (o.orderId === orderId ? { ...o, status: "dibatalkan" } : o))
+      prev.map((o) => (o.orderId === orderId ? { ...o, status: "dibatalkan", cancellationReason: reason } : o))
     );
   }
 

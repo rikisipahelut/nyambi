@@ -19,11 +19,20 @@ interface OrderDetail {
   created_at: string;
 }
 
+interface StatusLog {
+  from_status: OrderStatus | null;
+  to_status: OrderStatus;
+  note: string | null;
+  actor: string;
+  created_at: string;
+}
+
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: string }> = {
-  menunggu:     { label: "Menunggu Konfirmasi", color: "bg-cta-amber/15 text-cta-amber",            icon: "schedule"     },
-  dikonfirmasi: { label: "Dikonfirmasi",         color: "bg-pale-mint/30 text-secondary",             icon: "check_circle" },
-  selesai:      { label: "Selesai",              color: "bg-primary/10 text-primary",                 icon: "task_alt"     },
-  dibatalkan:   { label: "Dibatalkan",           color: "bg-error-container text-on-error-container", icon: "cancel"       },
+  menunggu:     { label: "Menunggu Konfirmasi", color: "bg-cta-amber/15 text-cta-amber",              icon: "schedule"     },
+  dikonfirmasi: { label: "Dikonfirmasi",         color: "bg-pale-mint/30 text-secondary",               icon: "check_circle" },
+  selesai:      { label: "Selesai",              color: "bg-primary/10 text-primary",                   icon: "task_alt"     },
+  dibatalkan:   { label: "Dibatalkan",           color: "bg-error-container text-on-error-container",   icon: "cancel"       },
+  kadaluarsa:   { label: "Kadaluarsa",           color: "bg-surface-container text-on-surface-variant", icon: "event_busy"   },
 };
 
 function Row({ icon, label, value }: { icon: string; label: string; value: string }) {
@@ -43,6 +52,7 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [logs, setLogs] = useState<StatusLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -50,8 +60,14 @@ export default function OrderDetailPage() {
     if (!ready) return;
     if (!user) { router.replace(`/masuk?from=/orders/${params.id}`); return; }
 
-    api.get<{ data: OrderDetail }>(`/orders/${params.id}`)
-      .then((res) => setOrder(res.data))
+    Promise.all([
+      api.get<{ data: OrderDetail }>(`/orders/${params.id}`),
+      api.get<{ data: StatusLog[] }>(`/orders/${params.id}/logs`),
+    ])
+      .then(([orderRes, logsRes]) => {
+        setOrder(orderRes.data);
+        setLogs(logsRes.data);
+      })
       .catch((err) => {
         if (err instanceof ApiError && (err.status === 404 || err.status === 403)) setNotFound(true);
       })
@@ -118,6 +134,39 @@ export default function OrderDetailPage() {
           <Row icon="location_on" label="Alamat" value={order.alamat} />
           <Row icon="call" label="Nomor Telepon" value={`+62 ${order.telepon}`} />
         </div>
+
+        {logs.length > 0 && (
+          <div className="mb-2xl">
+            <h2 className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-lg">Riwayat Status</h2>
+            <div className="relative">
+              <div className="absolute left-2.75 top-0 bottom-0 w-px bg-cream-dark" />
+              <div className="space-y-lg">
+                {logs.map((log, i) => {
+                  const toCfg = STATUS_CONFIG[log.to_status];
+                  return (
+                    <div key={i} className="flex gap-lg items-start relative">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${toCfg.color}`}>
+                        <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>{toCfg.icon}</span>
+                      </div>
+                      <div className="pt-xs flex-1 min-w-0">
+                        <p className="font-body-md text-body-md text-on-surface font-bold">{toCfg.label}</p>
+                        {log.note && (
+                          <p className="text-on-surface-variant font-body-sm text-body-sm mt-xs">"{log.note}"</p>
+                        )}
+                        <p className="text-on-surface-variant font-label-sm text-label-sm mt-xs">
+                          {log.actor} · {new Date(log.created_at).toLocaleDateString("id-ID", {
+                            day: "numeric", month: "short", year: "numeric",
+                            hour: "2-digit", minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-lg">
           {order.worker && (

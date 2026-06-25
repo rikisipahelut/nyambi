@@ -132,7 +132,7 @@ export default function BookingModal({ workerId, workerName, specialty }: Bookin
                       required
                       value={form.tanggal}
                       onChange={handleChange}
-                      min={new Date().toISOString().split("T")[0]}
+                      min={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split("T")[0]; })()}
                       className="w-full bg-surface-container-low border border-cream-dark rounded-xl px-lg py-md text-body-md font-body-md focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
