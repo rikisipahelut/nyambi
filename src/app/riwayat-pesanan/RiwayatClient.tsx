@@ -290,6 +290,18 @@ export default function RiwayatClient() {
                         {completing === order.orderId ? "Memproses..." : "Tandai Selesai"}
                       </button>
                     )}
+                    {(order.status === "dikonfirmasi" || order.status === "selesai") && (
+                      <Link
+                        href={`/komplain/${order.orderId}`}
+                        className={`px-lg py-xs rounded-full font-bold text-label-sm transition-all ${
+                          order.hasComplaint
+                            ? "bg-cta-amber/15 text-cta-amber border border-cta-amber/40 hover:bg-cta-amber/25"
+                            : "border border-on-surface-variant/40 text-on-surface-variant hover:border-error hover:text-error"
+                        }`}
+                      >
+                        {order.hasComplaint ? "Komplain Aktif" : "Komplain"}
+                      </Link>
+                    )}
                     {order.workerId && (
                       <Link
                         href={`/pekerja/${order.workerId}`}

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import SubHeader from "@/components/layout/SubHeader";
 import { resolveStorageUrl } from "@/lib/storage";
 import BookingModal from "@/components/ui/BookingModal";
 
@@ -42,14 +43,7 @@ function WorkerAvatar({ name }: { name: string }) {
 function Skeleton() {
   return (
     <>
-      <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">
-        <nav className="flex items-center h-20 px-xl md:px-5xl max-w-360 mx-auto w-full gap-lg">
-          <Link href="/pekerja" className="text-on-surface-variant hover:text-primary transition-colors">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <span className="text-headline-md font-display font-black text-primary tracking-tight">Nyambi</span>
-        </nav>
-      </header>
+      <SubHeader backHref="/pekerja" />
       <main className="max-w-360 mx-auto px-xl md:px-5xl py-4xl animate-pulse">
         <div className="bg-cream-dark rounded-xl h-72 mb-2xl" />
         <div className="grid md:grid-cols-3 gap-2xl">
@@ -83,14 +77,7 @@ export default function PekerjaAuthGate({ worker }: { worker: WorkerFull }) {
 
   return (
     <>
-      <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">
-        <nav className="flex items-center h-20 px-xl md:px-5xl max-w-360 mx-auto w-full gap-lg">
-          <Link href="/pekerja" className="text-on-surface-variant hover:text-primary transition-colors">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <span className="text-headline-md font-display font-black text-primary tracking-tight">Nyambi</span>
-        </nav>
-      </header>
+      <SubHeader backHref="/pekerja" />
 
       <main className="max-w-360 mx-auto px-xl md:px-5xl py-4xl">
         {/* Profile card */}

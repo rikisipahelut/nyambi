@@ -1,21 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { api, ApiError } from "@/lib/api";
+import SubHeader from "@/components/layout/SubHeader";
 import type { OrderStatus } from "@/hooks/useOrders";
+
+interface ProofPhoto {
+  id: string;
+  url: string;
+}
 
 interface OrderDetail {
   id: string;
-  worker: { id: string; nama: string; specialty: string; image_url: string | null } | null;
+  worker: { id: string; user_id: string; nama: string; specialty: string; image_url: string | null } | null;
   tanggal: string;
   waktu: string;
   deskripsi: string | null;
   alamat: string;
   telepon: string;
   status: OrderStatus;
+  has_complaint: boolean;
+  proof_photos: ProofPhoto[];
   created_at: string;
 }
 
@@ -56,6 +64,14 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Proof photo upload state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
   useEffect(() => {
     if (!ready) return;
     if (!user) { router.replace(`/masuk?from=/orders/${params.id}`); return; }
@@ -73,6 +89,43 @@ export default function OrderDetailPage() {
       })
       .finally(() => setLoading(false));
   }, [ready, user, router, params.id]);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files) return;
+    const existing = order?.proof_photos.length ?? 0;
+    const files = Array.from(e.target.files).slice(0, 5 - existing);
+    setPendingFiles(files);
+    setUploadError("");
+    e.target.value = "";
+  }
+
+  async function handleUpload() {
+    if (!pendingFiles.length || !order) return;
+    setUploading(true);
+    setUploadError("");
+    const form = new FormData();
+    pendingFiles.forEach((f) => form.append("photos[]", f));
+    try {
+      const res = await api.post<{ data: ProofPhoto[] }>(`/orders/${order.id}/proof`, form);
+      setOrder((prev) => prev ? { ...prev, proof_photos: [...prev.proof_photos, ...res.data] } : prev);
+      setPendingFiles([]);
+    } catch (err) {
+      setUploadError(err instanceof ApiError ? err.message : "Gagal mengupload foto.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleDelete(photoId: string) {
+    if (!order) return;
+    setDeletingId(photoId);
+    try {
+      await api.delete(`/orders/${order.id}/proof/${photoId}`);
+      setOrder((prev) => prev ? { ...prev, proof_photos: prev.proof_photos.filter((p) => p.id !== photoId) } : prev);
+    } catch { /* biarkan */ } finally {
+      setDeletingId(null);
+    }
+  }
 
   if (!ready || !user) return null;
 
@@ -102,16 +155,14 @@ export default function OrderDetailPage() {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
+  const isWorkerView = !!(order.worker && user.id === order.worker.user_id);
+  const canUpload = isWorkerView && (order.status === "dikonfirmasi" || order.status === "selesai");
+  const maxPhotos = 5;
+  const photoSlots = maxPhotos - (order.proof_photos.length + pendingFiles.length);
+
   return (
     <>
-      <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">
-        <nav className="flex items-center h-20 px-xl md:px-5xl max-w-360 mx-auto w-full gap-lg">
-          <Link href="/riwayat-pesanan" className="text-on-surface-variant hover:text-primary transition-colors">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <span className="text-headline-md font-display font-black text-primary tracking-tight">Nyambi</span>
-        </nav>
-      </header>
+      <SubHeader backHref={isWorkerView ? "/pesanan-masuk" : "/riwayat-pesanan"} />
 
       <main className="py-4xl px-xl md:px-5xl max-w-144 mx-auto">
         <div className="flex items-center justify-between mb-2xl flex-wrap gap-md">
@@ -135,6 +186,133 @@ export default function OrderDetailPage() {
           <Row icon="call" label="Nomor Telepon" value={`+62 ${order.telepon}`} />
         </div>
 
+        {/* ── Foto Bukti Pekerjaan ── */}
+        {(order.proof_photos.length > 0 || canUpload) && (
+          <div className="mb-2xl">
+            <div className="flex items-center justify-between mb-lg">
+              <h2 className="font-label-sm text-label-sm text-on-surface-variant uppercase">
+                Foto Bukti Pekerjaan
+              </h2>
+              {order.proof_photos.length > 0 && (
+                <span className="text-label-sm font-label-sm text-on-surface-variant">
+                  {order.proof_photos.length}/{maxPhotos}
+                </span>
+              )}
+            </div>
+
+            {/* Grid foto yang sudah diupload */}
+            {order.proof_photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-sm mb-md">
+                {order.proof_photos.map((photo) => (
+                  <div key={photo.id} className="relative group aspect-square rounded-xl overflow-hidden bg-surface-container-low">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.url}
+                      alt="Bukti pekerjaan"
+                      className="w-full h-full object-cover cursor-pointer"
+                      onClick={() => setLightboxUrl(photo.url)}
+                    />
+                    {isWorkerView && (
+                      <button
+                        onClick={() => handleDelete(photo.id)}
+                        disabled={deletingId === photo.id}
+                        className="absolute top-xs right-xs bg-error/90 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-60"
+                        title="Hapus foto"
+                      >
+                        {deletingId === photo.id ? (
+                          <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Preview foto yang belum diupload */}
+            {pendingFiles.length > 0 && (
+              <div className="grid grid-cols-3 gap-sm mb-md">
+                {pendingFiles.map((file, i) => (
+                  <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-surface-container-low border-2 border-dashed border-primary/40">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    <button
+                      onClick={() => setPendingFiles((prev) => prev.filter((_, j) => j !== i))}
+                      className="absolute top-xs right-xs bg-surface/90 text-on-surface rounded-full w-7 h-7 flex items-center justify-center hover:bg-error hover:text-white transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                    <div className="absolute bottom-xs left-xs right-xs text-center">
+                      <span className="text-[10px] bg-surface/80 text-on-surface rounded px-xs py-0.5">Belum diupload</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Area upload (worker only) */}
+            {canUpload && (
+              <div className="space-y-sm">
+                {photoSlots > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="w-full flex items-center justify-center gap-md border-2 border-dashed border-cream-dark rounded-xl py-lg hover:border-primary hover:text-primary transition-all text-on-surface-variant disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">add_photo_alternate</span>
+                    <span className="font-body-md text-body-md font-bold">
+                      Tambah Foto {photoSlots > 0 ? `(maks. ${photoSlots} lagi)` : ""}
+                    </span>
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
+                {uploadError && (
+                  <div className="flex items-center gap-sm text-error font-label-sm text-label-sm bg-error-container/20 border border-error px-md py-sm rounded-lg">
+                    <span className="material-symbols-outlined text-[16px] shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+                    {uploadError}
+                  </div>
+                )}
+
+                {pendingFiles.length > 0 && (
+                  <button
+                    onClick={handleUpload}
+                    disabled={uploading}
+                    className="w-full py-md rounded-full bg-secondary text-on-primary font-bold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-sm"
+                  >
+                    {uploading ? (
+                      <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> Mengupload...</>
+                    ) : (
+                      <><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>cloud_upload</span> Upload {pendingFiles.length} Foto</>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {order.proof_photos.length === 0 && !canUpload && (
+              <p className="text-on-surface-variant font-body-md text-body-md text-center py-lg">
+                Belum ada foto bukti pekerjaan.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Riwayat Status ── */}
         {logs.length > 0 && (
           <div className="mb-2xl">
             <h2 className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-lg">Riwayat Status</h2>
@@ -168,8 +346,34 @@ export default function OrderDetailPage() {
           </div>
         )}
 
+        {/* ── Banner Komplain ── */}
+        {order.has_complaint && (
+          <Link
+            href={`/komplain/${order.id}`}
+            className="flex items-center gap-md bg-cta-amber/10 border border-cta-amber/40 text-cta-amber px-xl py-lg rounded-xl mb-2xl hover:bg-cta-amber/20 transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px] shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>gavel</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold font-body-md text-body-md">Komplain Aktif</p>
+              <p className="font-label-sm text-label-sm text-cta-amber/80">Ada komplain terbuka untuk pesanan ini. Klik untuk melihat thread.</p>
+            </div>
+            <span className="material-symbols-outlined text-[18px] shrink-0">chevron_right</span>
+          </Link>
+        )}
+
+        {(order.status === "dikonfirmasi" || order.status === "selesai") && !order.has_complaint && (
+          <Link
+            href={`/komplain/${order.id}/buat`}
+            className="flex items-center gap-md border border-cream-dark text-on-surface-variant px-xl py-lg rounded-xl mb-2xl hover:border-error hover:text-error transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px] shrink-0">report</span>
+            <span className="flex-1 font-body-md text-body-md font-bold">Ajukan Komplain</span>
+            <span className="material-symbols-outlined text-[18px] shrink-0">chevron_right</span>
+          </Link>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-lg">
-          {order.worker && (
+          {order.worker && !isWorkerView && (
             <Link
               href={`/pekerja/${order.worker.id}`}
               className="flex-1 py-md rounded-full border border-primary text-primary font-bold hover:bg-primary hover:text-on-primary transition-all text-center"
@@ -178,13 +382,35 @@ export default function OrderDetailPage() {
             </Link>
           )}
           <Link
-            href="/riwayat-pesanan"
+            href={isWorkerView ? "/pesanan-masuk" : "/riwayat-pesanan"}
             className="flex-1 py-md rounded-full bg-primary text-on-primary font-bold hover:bg-primary-container transition-all text-center"
           >
-            Riwayat Pesanan
+            {isWorkerView ? "Pesanan Masuk" : "Riwayat Pesanan"}
           </Link>
         </div>
       </main>
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-xl"
+          onClick={() => setLightboxUrl(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt="Foto bukti"
+            className="max-w-full max-h-full object-contain rounded-xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-xl right-xl bg-surface/20 hover:bg-surface/40 text-white rounded-full w-11 h-11 flex items-center justify-center transition-all"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      )}
     </>
   );
 }

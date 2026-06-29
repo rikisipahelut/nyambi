@@ -17,6 +17,7 @@ export interface Order {
   telepon: string;
   status: OrderStatus;
   cancellationReason: string | null;
+  hasComplaint: boolean;
   createdAt: string;
 }
 
@@ -30,6 +31,7 @@ interface ApiOrder {
   telepon: string;
   status: OrderStatus;
   cancellation_reason: string | null;
+  has_complaint: boolean;
   created_at: string;
 }
 
@@ -46,6 +48,7 @@ function mapOrder(o: ApiOrder): Order {
     telepon:            o.telepon,
     status:             o.status,
     cancellationReason: o.cancellation_reason ?? null,
+    hasComplaint:       o.has_complaint ?? false,
     createdAt:          o.created_at,
   };
 }

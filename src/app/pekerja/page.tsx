@@ -1,3 +1,4 @@
+import SubHeader from "@/components/layout/SubHeader";
 import { Suspense } from "react";
 import Link from "next/link";
 import WorkerCard from "@/components/ui/WorkerCard";
@@ -209,17 +210,7 @@ export default async function PekerjaPage({
 
   return (
     <>
-      <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">
-        <nav className="flex items-center h-20 px-xl md:px-5xl max-w-360 mx-auto w-full gap-lg">
-          <Link
-            href="/"
-            className="text-on-surface-variant hover:text-primary transition-colors shrink-0"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <SearchBar />
-        </nav>
-      </header>
+      <SubHeader backHref="/"><SearchBar /></SubHeader>
 
       <main className="py-4xl px-xl md:px-5xl max-w-360 mx-auto">
         <div className="mb-3xl">

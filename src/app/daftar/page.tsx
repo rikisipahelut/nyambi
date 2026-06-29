@@ -1,4 +1,4 @@
-import Link from "next/link";
+import SubHeader from "@/components/layout/SubHeader";
 import DaftarUserForm from "./DaftarUserForm";
 
 export const metadata = {
@@ -9,16 +9,7 @@ export const metadata = {
 export default function DaftarPage() {
   return (
     <>
-      <header className="bg-surface sticky top-0 z-50 border-b border-cream-dark">
-        <nav className="flex items-center h-20 px-xl md:px-5xl max-w-360 mx-auto w-full gap-lg">
-          <Link href="/" className="text-on-surface-variant hover:text-primary transition-colors">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-          <span className="text-headline-md font-display font-black text-primary tracking-tight">
-            Nyambi
-          </span>
-        </nav>
-      </header>
+      <SubHeader backHref="/" />
 
       <main className="py-4xl px-xl md:px-5xl">
         <div className="text-center mb-3xl">

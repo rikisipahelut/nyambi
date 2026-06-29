@@ -17,6 +17,7 @@ interface IncomingOrder {
   telepon: string;
   status: OrderStatus;
   cancellation_reason: string | null;
+  has_complaint: boolean;
   created_at: string;
 }
 
@@ -258,6 +259,18 @@ export default function PesananMasukClient() {
                         >
                           {actionLoading === order.id ? "Memproses..." : "Konfirmasi"}
                         </button>
+                      )}
+                      {(order.status === "dikonfirmasi" || order.status === "selesai") && (
+                        <Link
+                          href={`/komplain/${order.id}`}
+                          className={`px-lg py-xs rounded-full font-bold text-label-sm transition-all ${
+                            order.has_complaint
+                              ? "bg-cta-amber/15 text-cta-amber border border-cta-amber/40 hover:bg-cta-amber/25"
+                              : "border border-on-surface-variant/40 text-on-surface-variant hover:border-error hover:text-error"
+                          }`}
+                        >
+                          {order.has_complaint ? "Komplain Aktif" : "Komplain"}
+                        </Link>
                       )}
                       <Link
                         href={`/orders/${order.id}`}
